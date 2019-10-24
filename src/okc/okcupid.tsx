@@ -1,11 +1,18 @@
 import axios, { AxiosInstance } from 'axios'
 
-const URLS = {
-  login: '/okc/login',
-  userProfile: (userId: string): string => {
-    return `/okc/1/apitun/profile/${userId}`
-  },
+const prepareUrls = (mock: true) => {
+  const route = mock ? '/mock' : '/okc'
+  return {
+    login: `${route}/login`,
+    userProfile: (userId: string): string => {
+      return `${route}/1/apitun/profile/${userId}`
+    },
+    getAnswers: (userId: string): string => {
+      return `${route}/1/apitun/profile/${userId}/answers`
+    },
+  }
 }
+const URLS = prepareUrls(true)
 
 type UserSession = {
   oauthToken: string
@@ -24,7 +31,7 @@ const login = (
   username: string,
   password: string,
 ): Promise<UserSession> => {
-  const cookie = 'session=12366432516965552599%3a16299680743430403858'
+  const cookie = 'session=12366432516965552599%3A16299680743430403858'
   document.cookie = cookie
   const params = new URLSearchParams()
   params.append('okc_api', String(1))
@@ -84,6 +91,12 @@ export class Okcupid {
       .then(response => {
         return new Profile(response.data)
       })
+  }
+
+  getAnswers(userId: string): Promise<Response> {
+    return this.axiosInst
+      .get(URLS.getAnswers(userId))
+      .then(resp => resp.data)
   }
 
   static create(
