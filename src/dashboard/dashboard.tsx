@@ -18,6 +18,7 @@ import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import { mainListItems } from './listItems'
+import { UserList } from './userList'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -187,7 +188,9 @@ export const Dashboard: FunctionComponent = () => {
             </Grid>
             {/* Recent Deposits */}
             <Grid item xs={12} md={4} lg={3}>
-              <Paper className={fixedHeightPaper}>Deposit</Paper>
+              <Paper className={fixedHeightPaper}>
+                <UserList />
+              </Paper>
             </Grid>
 
             <Grid item xs={12}>
