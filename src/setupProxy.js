@@ -11,15 +11,4 @@ module.exports = function (app) {
             },
         }),
     )
-
-    app.use(
-        '/mock',
-        proxy({
-            target: 'http://localhost:5000',
-            changeOrigin: true,
-            pathRewrite: {
-                '^/mock': '/'
-            },
-        }),
-    )
 }
