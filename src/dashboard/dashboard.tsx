@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react'
+import React, { FunctionComponent, useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -11,14 +11,19 @@ import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import Badge from '@material-ui/core/Badge'
 import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import Paper from '@material-ui/core/Paper'
 import Link from '@material-ui/core/Link'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import { mainListItems } from './listItems'
 import { UserList } from './userList'
+import {
+  Credentials,
+  CredentialsInput,
+} from '../components/credentialsInput'
+import { botOkcService, Profile } from '../okc/okcService'
+import { BookmarkInput } from '../components/bookmarkInput'
+import bookmarkService from '../services/bookmarkService'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -115,6 +120,18 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export const Dashboard: FunctionComponent = () => {
+  const [credentials, setCredentials] = useState<Credentials>({
+    username: localStorage.getItem('username') || '',
+    password: localStorage.getItem('password') || '',
+  })
+  const [profiles, setProfiles] = useState<Profile[]>([])
+
+  useEffect(() => {
+    botOkcService
+      .getProfiles(bookmarkService.getAllBookmarkUsers())
+      .then(setProfiles)
+  })
+
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
   const handleDrawerOpen = (): void => {
@@ -123,7 +140,30 @@ export const Dashboard: FunctionComponent = () => {
   const handleDrawerClose = (): void => {
     setOpen(false)
   }
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight)
+
+  const handleSubmit = (updated: Credentials): void => {
+    setCredentials(updated)
+    localStorage.setItem('username', updated.username)
+    localStorage.setItem('password', updated.password)
+    botOkcService.refreshSession(updated.username, updated.password)
+  }
+
+  const handleRefreshProfile = (profile: Profile): void => {
+    botOkcService
+      .bypassCache(true)
+      .getProfile(profile.userId)
+      .then(latestProfile => {
+        const profileIndex = profiles.findIndex(
+          profile => profile.userId === latestProfile.userId,
+        )
+        profiles[profileIndex] = latestProfile
+        setProfiles(profiles)
+      })
+  }
+
+  const handleOnProfileDeleted = (profile: Profile) => {
+    bookmarkService.unbookmark(profile.userId)
+  }
 
   return (
     <div className={classes.root}>
@@ -182,21 +222,26 @@ export const Dashboard: FunctionComponent = () => {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>Chart</Paper>
-            </Grid>
-            {/* Recent Deposits */}
-            <Grid item xs={12} md={4} lg={3}>
-              <Paper className={fixedHeightPaper}>
-                <UserList />
-              </Paper>
-            </Grid>
+          <CredentialsInput
+            credentials={credentials}
+            onSubmit={handleSubmit}
+          />
+        </Container>
 
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>Order</Paper>
-            </Grid>
-          </Grid>
+        <Container maxWidth="lg" className={classes.container}>
+          <BookmarkInput
+            onAdd={profile => setProfiles([profile, ...profiles])}
+          />
+        </Container>
+
+        <Container maxWidth="lg" className={classes.container}>
+          {profiles && (
+            <UserList
+              profiles={profiles}
+              onRefresh={handleRefreshProfile}
+              onDelete={handleOnProfileDeleted}
+            />
+          )}
         </Container>
         <Copyright />
       </main>
