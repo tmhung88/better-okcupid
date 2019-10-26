@@ -16,7 +16,7 @@ const URLS = {
   },
 }
 
-type UserSession = {
+export type UserSession = {
   oauthToken: string
   userId: string
   cookie: string
@@ -51,16 +51,12 @@ const anonymousHeaders = {
   'x-okcupid-platform': 'DESKTOP',
 }
 
-const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 type LoginApi = (
   username: string,
   password: string,
 ) => Promise<UserSession>
 
-interface OkcAccount {
+export interface OkcAccount {
   getAccountId(): string
   getUserProfile(userId: string): Promise<Payload>
   getAnswers(
@@ -71,20 +67,50 @@ interface OkcAccount {
   answer(questionId: number): Promise<Payload>
 }
 
-class CachedOkcAccount implements OkcAccount {
-  private account: OkcAccount
-  private _db: Dexie
-  constructor(okcupid: OkcAccount, db: Dexie) {
-    this.account = okcupid
-    this._db = db
+class DumbOkcAccount implements OkcAccount {
+  getAccountId(): string {
+    return ''
   }
+
+  getUserProfile(userId: string): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  answer(questionId: number): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  getAnswers(
+    userId: string,
+    filter?: AnswerFilter,
+    pageOpt?: PagingOpt,
+  ): Promise<Payload> {
+    return Promise.resolve({})
+  }
+}
+
+class CachedOkcAccount implements OkcAccount {
+  account: OkcAccount
+  _db: Dexie
+  readonly _bypass: boolean
+
+  constructor(account: OkcAccount, db: Dexie, bypass = false) {
+    this.account = account
+    this._db = db
+    this._bypass = bypass
+  }
+
+  bypass(bypass = false): CachedOkcAccount {
+    return new CachedOkcAccount(this.account, this._db, bypass)
+  }
+
   getAccountId(): string {
     return this.account.getAccountId()
   }
 
   async getUserProfile(userId: string): Promise<Payload> {
     const doc = await this._db.table('profiles').get(userId)
-    if (doc) {
+    if (!this._bypass && doc) {
       return doc.response
     }
 
@@ -108,7 +134,7 @@ class CachedOkcAccount implements OkcAccount {
       : queryId
 
     const doc = await this._db.table('answers').get(queryId)
-    if (doc) {
+    if (!this._bypass && doc) {
       return doc.response
     }
     return this.account
@@ -122,7 +148,7 @@ class CachedOkcAccount implements OkcAccount {
   async answer(questionId: number): Promise<Payload> {
     const docId = `${this.account.getAccountId()}|qid=${questionId}`
     const doc = await this._db.table('answered_questions').get(docId)
-    if (doc) {
+    if (!this._bypass && doc) {
       return doc.response
     }
     return this.account.answer(questionId).then(response => {
@@ -138,11 +164,11 @@ class UserOkcAccount implements OkcAccount {
   session: UserSession
   axiosInst: AxiosInstance
 
-  constructor(loginResp: UserSession) {
-    this.session = loginResp
+  constructor(userSession: UserSession) {
+    this.session = userSession
     this.axiosInst = axios.create({
       headers: {
-        Authorization: `Bearer ${loginResp.oauthToken}`,
+        Authorization: `Bearer ${userSession.oauthToken}`,
         ...anonymousHeaders,
       },
       withCredentials: true,
@@ -154,10 +180,6 @@ class UserOkcAccount implements OkcAccount {
   }
 
   getUserProfile(userId: string): Promise<Payload> {
-    db.table('profiles')
-      .get('123')
-      .then(data => console.log('data', data))
-
     return this.axiosInst
       .get(URLS.userProfile(userId))
       .then(response => response.data)
@@ -194,64 +216,6 @@ class UserOkcAccount implements OkcAccount {
   }
 }
 
-class OkcService {
-  okc: OkcAccount
-
-  constructor(okc: OkcAccount) {
-    this.okc = okc
-  }
-
-  getAllPrivates(targetId: string): Promise<Payload> {
-    return this.getAnswers(targetId, AnswerFilter.PUBLIC)
-  }
-
-  async answerFindOuts(
-    targetId: string,
-    holdOn = 1000,
-  ): Promise<Payload> {
-    const response = await this.getAnswers(
-      targetId,
-      AnswerFilter.FIND_OUT,
-    )
-
-    let successfulCount = 0
-    for (const { question } of response.data) {
-      await this.okc.answer(question.id)
-      await delay(holdOn)
-      successfulCount++
-    }
-
-    return Promise.resolve({ answeredQuestions: successfulCount })
-  }
-
-  private async getAnswers(
-    userId: string,
-    filter: AnswerFilter,
-  ): Promise<Payload> {
-    let after = undefined
-    let end = false
-    const finalPayload: Payload = {
-      data: [],
-      paging: {},
-    }
-
-    do {
-      const response: Payload = await this.okc.getAnswers(
-        userId,
-        filter,
-        { after: after },
-      )
-      finalPayload.data.push(...response.data)
-      finalPayload.paging = response.paging
-
-      after = response.paging.cursors.after
-      end = response.paging.end
-    } while (after && !end)
-
-    return finalPayload
-  }
-}
-
 const login: LoginApi = (
   username,
   password,
@@ -273,28 +237,14 @@ const login: LoginApi = (
     })
 }
 
-const cachedLogin: LoginApi = async (
-  username: string,
-  password: string,
-): Promise<UserSession> => {
-  const doc = await db.table('sessions').get(username)
-  if (doc) {
-    return doc.response
-  }
-  return login(username, password).then(userSession => {
-    db.table('sessions').put({ id: username, response: userSession })
-    return userSession
-  })
+const okcAccount = (userSession: UserSession): OkcAccount => {
+  return new CachedOkcAccount(new UserOkcAccount(userSession), db)
 }
 
-const okcAccount = (
-  username: string,
-  password: string,
-): Promise<OkcAccount> => {
-  return cachedLogin(username, password).then(
-    loginResp =>
-      new CachedOkcAccount(new UserOkcAccount(loginResp), db),
-  )
+export {
+  CachedOkcAccount,
+  DumbOkcAccount,
+  AnswerFilter,
+  login,
+  okcAccount,
 }
-
-export { okcAccount, AnswerFilter, OkcService }
