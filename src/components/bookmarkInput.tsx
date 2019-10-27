@@ -1,5 +1,5 @@
 import React, { Fragment, FunctionComponent, useState } from 'react'
-import { Button, Paper, TextField } from '@material-ui/core'
+import { Box, Button, Paper, TextField } from '@material-ui/core'
 import { botOkcService, Profile } from '../okc/okcService'
 import { UserCard } from './card'
 import bookmarkService from '../services/bookmarkService'
@@ -34,31 +34,25 @@ export const BookmarkInput: FunctionComponent<Props> = ({
   }
 
   return (
-    <Fragment>
-      <Paper>
-        <TextField
-          label="User ID"
-          value={userId}
-          onChange={({ target }): void =>
-            handleOnUserIdChanged(target.value)
-          }
-          margin="normal"
-        />
+    <Paper>
+      <TextField
+        label="User ID"
+        value={userId}
+        onChange={({ target }): void =>
+          handleOnUserIdChanged(target.value)
+        }
+        margin="normal"
+      />
 
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={!profile}
-          onClick={(): void => handleOnAddClick(profile)}
-        >
-          Add
-        </Button>
-      </Paper>
-      {profile && (
-        <Paper>
-          <UserCard profile={profile} />
-        </Paper>
-      )}
-    </Fragment>
+      <Button
+        variant="contained"
+        color="primary"
+        disabled={!profile}
+        onClick={(): void => handleOnAddClick(profile)}
+      >
+        Add
+      </Button>
+      {profile && <UserCard profile={profile} />}
+    </Paper>
   )
 }

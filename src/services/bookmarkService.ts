@@ -1,6 +1,12 @@
 const BOOKMARK_USERS_KEY = 'bookmark_user_ids'
 class BookmarkService {
   bookmark(userId: string): void {
+    const isDuplicate = this.getAllBookmarkUsers().some(
+      bookmarkedId => userId === bookmarkedId,
+    )
+    if (isDuplicate) {
+      return
+    }
     const userIds = [userId, ...this.getAllBookmarkUsers()]
     localStorage.setItem(BOOKMARK_USERS_KEY, JSON.stringify(userIds))
   }

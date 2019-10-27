@@ -1,10 +1,10 @@
 import React, { FunctionComponent, Fragment } from 'react'
 import { Grid } from '@material-ui/core'
-import { UserCard } from '../components/card'
+import { EmptyCard, UserCard } from '../components/card'
 import { Profile } from '../okc/okcService'
 
 type Props = {
-  profilesPerRow?: number
+  profilesPerRow: number
   profiles: Profile[]
   onRefresh: (profile: Profile) => void
   onDelete: (profile: Profile) => void
@@ -23,6 +23,21 @@ export const UserList: FunctionComponent<Props> = ({
   while (clonedProfiles.length > 0) {
     profileRows.push(clonedProfiles.splice(0, profilesPerRow))
   }
+  if (profileRows.length === 0) {
+    profileRows.push([])
+  }
+
+  const lastRowInd = profileRows.length - 1
+  const numberOfMissingCards =
+    profilesPerRow - profileRows[lastRowInd].length
+  const emptyCards = Array.from(
+    new Array(numberOfMissingCards).keys(),
+  ).map(index => (
+    <Grid item xs key={index}>
+      <EmptyCard />
+    </Grid>
+  ))
+
   return (
     <Fragment>
       {profileRows.map((row, rowIndex) => (
@@ -37,6 +52,7 @@ export const UserList: FunctionComponent<Props> = ({
               />
             </Grid>
           ))}
+          {rowIndex === lastRowInd && emptyCards}
         </Grid>
       ))}
     </Fragment>

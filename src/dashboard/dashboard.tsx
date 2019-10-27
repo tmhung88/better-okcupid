@@ -171,8 +171,9 @@ export const Dashboard: FunctionComponent = () => {
       })
   }
 
-  const handleOnProfileDeleted = (profile: Profile) => {
-    bookmarkService.unbookmark(profile.userId)
+  const handleOnProfileDeleted = ({ userId }: Profile) => {
+    bookmarkService.unbookmark(userId)
+    setProfiles(profiles.filter(profile => profile.userId !== userId))
   }
 
   return (

@@ -12,6 +12,11 @@ import { Profile } from '../okc/okcService'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import DeleteIcon from '@material-ui/icons/Delete'
 
+const cardStyle = {
+  display: 'block',
+  width: '280px',
+}
+
 type Props = {
   profile: Profile
   onRefresh?: (profile: Profile) => void
@@ -26,7 +31,7 @@ export const UserCard = ({
   onOpen,
 }: Props) => {
   return (
-    <Card>
+    <Card style={cardStyle}>
       <CardActionArea
         onClick={onOpen ? (): void => onOpen(profile) : undefined}
       >
@@ -79,4 +84,8 @@ export const UserCard = ({
       </CardActions>
     </Card>
   )
+}
+
+export const EmptyCard = () => {
+  return <Card style={cardStyle}></Card>
 }
