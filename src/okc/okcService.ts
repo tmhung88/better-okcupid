@@ -14,6 +14,31 @@ const delay = (ms: 1000): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/**
+ * A photo url https://k1.okccdn.com/php/load_okc_image.php/images/50x0/806x756/0/5325329573026.webp?v=2
+ * The pattern {image_size}/0/{image_id}.webp?v=2
+ */
+class Photo {
+  payload: Payload
+  id: string
+  constructor(payload: Payload) {
+    const photoUrl = payload.full
+    this.payload = payload
+    this.id = photoUrl.substring(
+      photoUrl.indexOf('/0/') + '/0/'.length,
+      photoUrl.lastIndexOf('.webp?v=2'),
+    )
+  }
+
+  cardUrl(): string {
+    return `https://cdn.okccdn.com/php/load_okc_image.php/images/225x225/225x225/0x186/1127x1313/0/${this.id}.webp?v=2`
+  }
+
+  originalUrl(): string {
+    return `https://cdn.okccdn.com/php/load_okc_image.php/images/0x186/1127x1313/0/${this.id}.webp?v=2`
+  }
+}
+
 export class Profile {
   private readonly _payload: Payload
   lastLogin: string
@@ -21,6 +46,7 @@ export class Profile {
   displayName: string
   userId: string
   distance: string
+  photos: Photo[]
 
   constructor(profileResp: Payload) {
     this._payload = profileResp
@@ -33,6 +59,12 @@ export class Profile {
     const location = userData.location.formatted
     const distance = Math.round(location.distance * 1.6)
     this.distance = `${location.standard}, ${distance} km`
+    this.photos = userData.photos.map(
+      (payload: Payload) => new Photo(payload),
+    )
+    if (this.userId === '15458037203168844198') {
+      console.log(JSON.stringify(userData.photos[0]))
+    }
   }
 
   payload() {

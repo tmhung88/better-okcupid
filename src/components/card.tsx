@@ -15,31 +15,35 @@ export const UserCard = ({ profile, onRefresh, onDelete }: Props) => {
       <Typography variant="h4">
         {profile.displayName}, {profile.age}
       </Typography>
-      {onRefresh && (
-        <IconButton
-          edge="start"
-          color="inherit"
-          onClick={() => onRefresh(profile)}
-        >
-          <RefreshIcon />
-        </IconButton>
-      )}
-
-      {onDelete && (
-        <IconButton
-          edge="start"
-          color="inherit"
-          onClick={() => onDelete(profile)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      )}
+      <img src={profile.photos[0].cardUrl()} />
 
       <Box>
         <Typography variant="caption">{profile.lastLogin}</Typography>
       </Box>
       <Box>
         <Typography variant="caption">{profile.distance}</Typography>
+      </Box>
+
+      <Box>
+        {onRefresh && (
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => onRefresh(profile)}
+          >
+            <RefreshIcon />
+          </IconButton>
+        )}
+
+        {onDelete && (
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => onDelete(profile)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        )}
       </Box>
     </Paper>
   )
