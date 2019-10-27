@@ -16,12 +16,20 @@ type Props = {
   profile: Profile
   onRefresh?: (profile: Profile) => void
   onDelete?: (profile: Profile) => void
+  onOpen?: (profile: Profile) => void
 }
 
-export const UserCard = ({ profile, onRefresh, onDelete }: Props) => {
+export const UserCard = ({
+  profile,
+  onRefresh,
+  onDelete,
+  onOpen,
+}: Props) => {
   return (
     <Card>
-      <CardActionArea>
+      <CardActionArea
+        onClick={onOpen ? (): void => onOpen(profile) : undefined}
+      >
         <CardMedia
           component="img"
           alt="Contemplative Reptile"

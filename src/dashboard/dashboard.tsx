@@ -24,6 +24,7 @@ import {
 import { botOkcService, Profile } from '../okc/okcService'
 import { BookmarkInput } from '../components/bookmarkInput'
 import bookmarkService from '../services/bookmarkService'
+import { ProfileDetails } from '../components/profileDetails/profileDetails'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -124,13 +125,18 @@ export const Dashboard: FunctionComponent = () => {
     username: localStorage.getItem('username') || '',
     password: localStorage.getItem('password') || '',
   })
+
+  const [
+    selectedProfile,
+    setSelectedProfile,
+  ] = useState<Profile | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
 
   useEffect(() => {
     botOkcService
       .getProfiles(bookmarkService.getAllBookmarkUsers())
       .then(setProfiles)
-  }, [bookmarkService.getAllBookmarkUsers()])
+  }, [bookmarkService.getAllBookmarkUsers().length])
 
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
@@ -141,11 +147,15 @@ export const Dashboard: FunctionComponent = () => {
     setOpen(false)
   }
 
-  const handleSubmit = (updated: Credentials): void => {
+  const handleCredentialsSubmitted = (updated: Credentials): void => {
     setCredentials(updated)
     localStorage.setItem('username', updated.username)
     localStorage.setItem('password', updated.password)
     botOkcService.refreshSession(updated.username, updated.password)
+  }
+
+  const handleProfileOpened = (profile: Profile): void => {
+    setSelectedProfile(profile)
   }
 
   const handleRefreshProfile = (profile: Profile): void => {
@@ -224,7 +234,7 @@ export const Dashboard: FunctionComponent = () => {
         <Container maxWidth="lg" className={classes.container}>
           <CredentialsInput
             credentials={credentials}
-            onSubmit={handleSubmit}
+            onSubmit={handleCredentialsSubmitted}
           />
         </Container>
 
@@ -241,9 +251,15 @@ export const Dashboard: FunctionComponent = () => {
               profiles={profiles}
               onRefresh={handleRefreshProfile}
               onDelete={handleOnProfileDeleted}
+              onOpen={handleProfileOpened}
             />
           )}
         </Container>
+        {selectedProfile && (
+          <Container maxWidth="lg" className={classes.container}>
+            <ProfileDetails profile={selectedProfile} />
+          </Container>
+        )}
         <Copyright />
       </main>
     </div>

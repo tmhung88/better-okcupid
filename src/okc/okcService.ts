@@ -62,9 +62,6 @@ export class Profile {
     this.photos = userData.photos.map(
       (payload: Payload) => new Photo(payload),
     )
-    if (this.userId === '15458037203168844198') {
-      console.log(JSON.stringify(userData.photos[0]))
-    }
   }
 
   payload() {
