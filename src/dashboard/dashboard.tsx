@@ -130,7 +130,7 @@ export const Dashboard: FunctionComponent = () => {
     botOkcService
       .getProfiles(bookmarkService.getAllBookmarkUsers())
       .then(setProfiles)
-  })
+  }, [bookmarkService.getAllBookmarkUsers()])
 
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
