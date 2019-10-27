@@ -237,6 +237,7 @@ export const Dashboard: FunctionComponent = () => {
         <Container maxWidth="lg" className={classes.container}>
           {profiles && (
             <UserList
+              profilesPerRow={4}
               profiles={profiles}
               onRefresh={handleRefreshProfile}
               onDelete={handleOnProfileDeleted}
