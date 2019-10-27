@@ -14,6 +14,63 @@ const delay = (ms: 1000): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+export enum Genre {
+  dating = 'dating',
+  ethics = 'ethics',
+  lifestyle = 'lifestyle',
+  other = 'other',
+  religion = 'religion',
+  sex = 'sex',
+}
+
+interface MetaPayload<T> {
+  data: T
+  paging: any
+}
+
+type Question = {
+  id: number
+  genre: Genre
+  text: string
+  answers: string[]
+}
+class Answer {
+  payload: Payload
+  question: Question
+  /**
+   * Their answer
+   */
+  answer: number
+  /**
+   * Answers they want from you
+   */
+  accepts: number[]
+  /**
+   * A note explained on their choice
+   */
+  note: string
+  constructor(payload: Payload) {
+    this.payload = payload
+    this.question = payload.question
+    const target = payload.target
+    this.answer = target.answer
+    this.accepts = target.accepts
+    this.note = target.note
+  }
+
+  answerChoice(): string {
+    return this.question.answers[this.answer]
+  }
+
+  acceptChoices(): string[] {
+    try {
+      return this.accepts.map(accept => this.question.answers[accept])
+    } catch (e) {
+      return ['I want something']
+    }
+  }
+}
+
 /**
  * A photo url https://k1.okccdn.com/php/load_okc_image.php/images/50x0/806x756/0/5325329573026.webp?v=2
  * The pattern {image_size}/0/{image_id}.webp?v=2
@@ -50,7 +107,6 @@ export class Profile {
 
   constructor(profileResp: Payload) {
     this._payload = profileResp
-
     const userData = profileResp.user
     this.age = userData.userinfo.age
     this.displayName = userData.userinfo.displayname
@@ -108,7 +164,9 @@ class OkcService {
     )
   }
 
-  getAllPrivates(targetId: string): Promise<Payload> {
+  getAllPublicAnswers(
+    targetId: string,
+  ): Promise<MetaPayload<Answer[]>> {
     return this.getAnswers(targetId, AnswerFilter.PUBLIC)
   }
 
@@ -134,10 +192,10 @@ class OkcService {
   private async getAnswers(
     userId: string,
     filter: AnswerFilter,
-  ): Promise<Payload> {
+  ): Promise<MetaPayload<Answer[]>> {
     let after = undefined
     let end = false
-    const finalPayload: Payload = {
+    const finalPayload: MetaPayload<Answer[]> = {
       data: [],
       paging: {},
     }
@@ -148,7 +206,9 @@ class OkcService {
         filter,
         { after: after },
       )
-      finalPayload.data.push(...response.data)
+      finalPayload.data.push(
+        ...response.data.map((answer: any) => new Answer(answer)),
+      )
       finalPayload.paging = response.paging
 
       after = response.paging.cursors.after
@@ -164,4 +224,4 @@ const botOkcService = cachedUserSession
   ? new OkcService(okcAccount(cachedUserSession))
   : new OkcService(new DumbOkcAccount())
 
-export { botOkcService }
+export { botOkcService, Answer }
