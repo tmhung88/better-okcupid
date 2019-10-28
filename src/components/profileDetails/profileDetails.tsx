@@ -1,79 +1,65 @@
 import React, { FunctionComponent, useEffect, useState } from 'react'
-import {
-  Answer,
-  botOkcService,
-  Genre,
-  Profile,
-} from '../../okc/okcService'
-import {
-  Box,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  TextField,
-  Typography,
-} from '@material-ui/core'
-import Container from '@material-ui/core/Container'
-import { QuestionFilter } from './questionFilter'
+import { Answer, botOkcService, Genre, Profile } from '../../okc/okcService'
+import { Box, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
+import { QuestionList } from './questionList'
+import { questionStarService } from '../../services/bookmarkService'
 
 type Props = {
   profile: Profile
 }
-export const ProfileDetails: FunctionComponent<Props> = ({
-  profile,
-}: Props) => {
+export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => {
   const [keyword, setKeyword] = useState<string>('')
   const [allAnswers, setAllAnswers] = useState<Answer[]>([])
   const [answers, setAnswers] = useState<Answer[]>([])
-  const [selectedCategory, setCategory] = useState<Genre>(
-    Genre.dating,
-  )
+  const [starredQuestions, setStarredQuestions] = useState<number[]>(questionStarService.getAllBookmarks())
+  const [selectedCategory, setCategory] = useState<string>(Genre.dating)
+
   const filterAnswers = (
     answers: Answer[],
-    genre: Genre,
+    starredQuestions: number[],
+    category: string,
     keyword: string,
   ): Answer[] => {
+    if (category === 'star') {
+      return answers.filter(answer => starredQuestions.includes(answer.question.id))
+    }
+    const genre = Object.values(Genre).find(genre => genre === category)
     return answers
       .filter(answer => answer.question.genre === genre)
-      .filter(answer =>
-        answer.question.text
-          .toLowerCase()
-          .includes(keyword.toLowerCase()),
-      )
+      .filter(answer => answer.question.text.toLowerCase().includes(keyword.toLowerCase()))
   }
 
   useEffect(() => {
-    botOkcService
-      .getAllPublicAnswers(profile.userId)
-      .then(payload => {
-        const allAnswers = payload.data
-        setAnswers(
-          filterAnswers(allAnswers, selectedCategory, keyword),
-        )
-        setAllAnswers(allAnswers)
-      })
-  }, [profile.userId, allAnswers.length])
+    botOkcService.getAllPublicAnswers(profile.userId).then(payload => {
+      setAllAnswers(payload.data)
+    })
+  }, [profile.userId])
+
+  useEffect(() => {
+    setStarredQuestions(questionStarService.getAllBookmarks())
+    filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword)
+  }, [questionStarService.getAllBookmarks().length, allAnswers.length])
 
   const handleOnCategoryChanged = (category: string) => {
-    const selected = Object.values(Genre).find(
-      genre => genre === category,
-    )
-    if (!selected) {
-      return
-    }
-
-    setCategory(selected)
-
-    setAnswers(filterAnswers(allAnswers, selected, keyword))
+    setCategory(category)
+    setAnswers(filterAnswers(allAnswers, starredQuestions, category, keyword))
   }
 
   const handleOnKeywordChanged = (updatedKeyword: string) => {
     setKeyword(updatedKeyword)
-    setAnswers(
-      filterAnswers(allAnswers, selectedCategory, updatedKeyword),
-    )
+    setAnswers(filterAnswers(allAnswers, starredQuestions, selectedCategory, updatedKeyword))
+  }
+
+  const handleOnQuestionStarred = (questionId: number) => {
+    console.log('Star question ' + questionId)
+    questionStarService.bookmark(questionId)
+    setStarredQuestions(questionStarService.getAllBookmarks())
+  }
+
+  const handleOnQuestionUnstarred = (questionId: number) => {
+    console.log('Unstar question ' + questionId)
+    questionStarService.unbookmark(questionId)
+    setStarredQuestions(questionStarService.getAllBookmarks())
   }
 
   return (
@@ -101,15 +87,14 @@ export const ProfileDetails: FunctionComponent<Props> = ({
                 {genre}
               </MenuItem>
             ))}
+            <MenuItem value={'star'}>star</MenuItem>
           </Select>
 
           <TextField
             id="keyword"
             label="Keyword"
             value={keyword}
-            onChange={({ target }) =>
-              handleOnKeywordChanged(target.value)
-            }
+            onChange={({ target }) => handleOnKeywordChanged(target.value)}
             margin="normal"
           />
         </FormControl>
@@ -127,7 +112,12 @@ export const ProfileDetails: FunctionComponent<Props> = ({
         <Typography variant="caption">{profile.distance}</Typography>
       </Box>
 
-      <QuestionFilter answers={answers} />
+      <QuestionList
+        answers={answers}
+        starredQuestions={starredQuestions}
+        star={handleOnQuestionStarred}
+        unstar={handleOnQuestionUnstarred}
+      />
     </Paper>
   )
 }

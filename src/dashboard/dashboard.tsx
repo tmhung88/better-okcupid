@@ -17,15 +17,11 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import { mainListItems } from './listItems'
 import { UserList } from './userList'
-import {
-  Credentials,
-  CredentialsInput,
-} from '../components/credentialsInput'
+import { Credentials, CredentialsInput } from '../components/credentialsInput'
 import { botOkcService, Profile } from '../okc/okcService'
 import { UserBookmark } from '../components/userBookmark'
 import { userBookmarkService } from '../services/bookmarkService'
 import { ProfileDetails } from '../components/profileDetails/profileDetails'
-import { QuestionStar } from '../components/questionBookmark'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -127,16 +123,11 @@ export const Dashboard: FunctionComponent = () => {
     password: localStorage.getItem('password') || '',
   })
 
-  const [
-    selectedProfile,
-    setSelectedProfile,
-  ] = useState<Profile | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
 
   useEffect(() => {
-    botOkcService
-      .getProfiles(userBookmarkService.getAllBookmarks())
-      .then(setProfiles)
+    botOkcService.getProfiles(userBookmarkService.getAllBookmarks()).then(setProfiles)
   }, [userBookmarkService.getAllBookmarks().length])
 
   const classes = useStyles()
@@ -164,9 +155,7 @@ export const Dashboard: FunctionComponent = () => {
       .bypassCache(true)
       .getProfile(profile.userId)
       .then(latestProfile => {
-        const profileIndex = profiles.findIndex(
-          profile => profile.userId === latestProfile.userId,
-        )
+        const profileIndex = profiles.findIndex(profile => profile.userId === latestProfile.userId)
         profiles[profileIndex] = latestProfile
         setProfiles(profiles)
       })
@@ -180,30 +169,18 @@ export const Dashboard: FunctionComponent = () => {
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar
-        position="absolute"
-        className={clsx(classes.appBar, open && classes.appBarShift)}
-      >
+      <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
         <Toolbar className={classes.toolbar}>
           <IconButton
             edge="start"
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
-            className={clsx(
-              classes.menuButton,
-              open && classes.menuButtonHidden,
-            )}
+            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            className={classes.title}
-          >
+          <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             Dashboard
           </Typography>
           <IconButton color="inherit">
@@ -216,10 +193,7 @@ export const Dashboard: FunctionComponent = () => {
       <Drawer
         variant="permanent"
         classes={{
-          paper: clsx(
-            classes.drawerPaper,
-            !open && classes.drawerPaperClose,
-          ),
+          paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
         }}
         open={open}
       >
@@ -234,17 +208,11 @@ export const Dashboard: FunctionComponent = () => {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <CredentialsInput
-            credentials={credentials}
-            onSubmit={handleCredentialsSubmitted}
-          />
+          <CredentialsInput credentials={credentials} onSubmit={handleCredentialsSubmitted} />
         </Container>
 
         <Container maxWidth="lg" className={classes.container}>
-          <UserBookmark
-            onAdd={profile => setProfiles([profile, ...profiles])}
-          />
-          <QuestionStar />
+          <UserBookmark onAdd={profile => setProfiles([profile, ...profiles])} />
         </Container>
 
         <Container maxWidth="lg" className={classes.container}>

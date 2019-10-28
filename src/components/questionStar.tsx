@@ -54,7 +54,7 @@ export const QuestionStar: FunctionComponent = () => {
         disabled={!question}
         onClick={(): void => handleOnAddClick(questionId)}
       >
-        Add
+        Star
       </Button>
       {question && (
         <Typography variant={'h5'} component="p">
