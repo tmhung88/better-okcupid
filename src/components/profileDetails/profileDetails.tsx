@@ -12,6 +12,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  TextField,
   Typography,
 } from '@material-ui/core'
 import Container from '@material-ui/core/Container'
@@ -23,31 +24,37 @@ type Props = {
 export const ProfileDetails: FunctionComponent<Props> = ({
   profile,
 }: Props) => {
+  const [keyword, setKeyword] = useState<string>('')
   const [allAnswers, setAllAnswers] = useState<Answer[]>([])
   const [answers, setAnswers] = useState<Answer[]>([])
   const [selectedCategory, setCategory] = useState<Genre>(
     Genre.dating,
   )
+  const filterAnswers = (
+    answers: Answer[],
+    genre: Genre,
+    keyword: string,
+  ): Answer[] => {
+    return answers
+      .filter(answer => answer.question.genre === genre)
+      .filter(answer =>
+        answer.question.text
+          .toLowerCase()
+          .includes(keyword.toLowerCase()),
+      )
+  }
 
   useEffect(() => {
     botOkcService
       .getAllPublicAnswers(profile.userId)
       .then(payload => {
         const allAnswers = payload.data
-        const filteredAnswer = allAnswers.filter(
-          answer => answer.question.genre === selectedCategory,
+        setAnswers(
+          filterAnswers(allAnswers, selectedCategory, keyword),
         )
-        setAnswers(filteredAnswer)
         setAllAnswers(allAnswers)
-
-        const brokenAnswer = allAnswers.find(
-          answer =>
-            answer.question.text ===
-            'How do you think your sex drive compares to what is typical for other people of your age and gender?',
-        )
-        console.log('brokenAnswer', brokenAnswer)
       })
-  }, [allAnswers.length])
+  }, [profile.userId, allAnswers.length])
 
   const handleOnCategoryChanged = (category: string) => {
     const selected = Object.values(Genre).find(
@@ -58,12 +65,15 @@ export const ProfileDetails: FunctionComponent<Props> = ({
     }
 
     setCategory(selected)
-    const filteredAnswers = allAnswers.filter(
-      answer => answer.question.genre === category,
-    )
-    console.log('filteredAnswers', filteredAnswers)
 
-    setAnswers(filteredAnswers)
+    setAnswers(filterAnswers(allAnswers, selected, keyword))
+  }
+
+  const handleOnKeywordChanged = (updatedKeyword: string) => {
+    setKeyword(updatedKeyword)
+    setAnswers(
+      filterAnswers(allAnswers, selectedCategory, updatedKeyword),
+    )
   }
 
   return (
@@ -92,6 +102,16 @@ export const ProfileDetails: FunctionComponent<Props> = ({
               </MenuItem>
             ))}
           </Select>
+
+          <TextField
+            id="keyword"
+            label="Keyword"
+            value={keyword}
+            onChange={({ target }) =>
+              handleOnKeywordChanged(target.value)
+            }
+            margin="normal"
+          />
         </FormControl>
       </form>
       <Container maxWidth="lg">
