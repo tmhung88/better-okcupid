@@ -2,7 +2,7 @@ import React, { Fragment, FunctionComponent, useState } from 'react'
 import { Box, Button, Paper, TextField } from '@material-ui/core'
 import { botOkcService, Profile } from '../okc/okcService'
 import { UserCard } from './card'
-import bookmarkService from '../services/bookmarkService'
+import { userBookmarkService } from '../services/bookmarkService'
 
 type Props = {
   onAdd: (profile: Profile) => void
@@ -27,7 +27,7 @@ export const UserBookmark: FunctionComponent<Props> = ({
     if (!profile) {
       return
     }
-    bookmarkService.bookmark(profile.userId)
+    userBookmarkService.bookmark(profile.userId)
     onAdd(profile)
     setUserId('')
     setProfile(null)

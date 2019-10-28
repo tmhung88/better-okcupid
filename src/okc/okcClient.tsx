@@ -14,6 +14,9 @@ const URLS = {
   answerQuestion: (questionId: number) => {
     return `/okc/1/apitun/questions/${questionId}`
   },
+  getQuestion(questionId: number) {
+    return `/okc/1/apitun/questions/${questionId}`
+  },
 }
 
 export type UserSession = {
@@ -65,6 +68,7 @@ export interface OkcAccount {
     pageOpt?: PagingOpt,
   ): Promise<Payload>
   answer(questionId: number): Promise<Payload>
+  getQuestion(questionId: number): Promise<Payload>
 }
 
 class DumbOkcAccount implements OkcAccount {
@@ -85,6 +89,10 @@ class DumbOkcAccount implements OkcAccount {
     filter?: AnswerFilter,
     pageOpt?: PagingOpt,
   ): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  getQuestion(questionId: number): Promise<Payload> {
     return Promise.resolve({})
   }
 }
@@ -158,6 +166,17 @@ class CachedOkcAccount implements OkcAccount {
       return response
     })
   }
+
+  async getQuestion(questionId: number): Promise<Payload> {
+    const doc = await this._db.table('questions').get(questionId)
+    if (!this._bypass && doc) {
+      return doc.response
+    }
+    return this.account.getQuestion(questionId).then(response => {
+      this._db.table('questions').put({ id: questionId, response })
+      return response
+    })
+  }
 }
 
 class UserOkcAccount implements OkcAccount {
@@ -212,6 +231,12 @@ class UserOkcAccount implements OkcAccount {
     }
     return this.axiosInst
       .post(URLS.answerQuestion(questionId), payload)
+      .then(response => response.data)
+  }
+
+  getQuestion(questionId: number): Promise<Payload> {
+    return this.axiosInst
+      .get(URLS.getQuestion(questionId))
       .then(response => response.data)
   }
 }

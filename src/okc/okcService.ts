@@ -28,7 +28,7 @@ interface MetaPayload<T> {
   paging: any
 }
 
-type Question = {
+export type Question = {
   id: number
   genre: Genre
   text: string
@@ -138,6 +138,12 @@ class OkcService {
     } else {
       return new OkcService(this.okc.bypass(bypass))
     }
+  }
+
+  getQuestion(questionId: number): Promise<Question> {
+    return this.okc
+      .getQuestion(questionId)
+      .then(payload => payload as Question)
   }
 
   refreshSession(username: string, password: string): Promise<void> {

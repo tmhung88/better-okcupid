@@ -1,28 +1,36 @@
-const BOOKMARK_USERS_KEY = 'bookmark_user_ids'
-class BookmarkService {
-  bookmark(userId: string): void {
-    const isDuplicate = this.getAllBookmarkUsers().some(
-      bookmarkedId => userId === bookmarkedId,
+class BookmarkService<T> {
+  private readonly storageKey: string
+  constructor(storageKey: string) {
+    this.storageKey = storageKey
+  }
+  bookmark(id: T): void {
+    const isDuplicate = this.getAllBookmarks().some(
+      bookmarkedId => id === bookmarkedId,
     )
     if (isDuplicate) {
       return
     }
-    const userIds = [userId, ...this.getAllBookmarkUsers()]
-    localStorage.setItem(BOOKMARK_USERS_KEY, JSON.stringify(userIds))
+    const userIds = [id, ...this.getAllBookmarks()]
+    localStorage.setItem(this.storageKey, JSON.stringify(userIds))
   }
 
-  unbookmark(deletedUserId: string): void {
-    const userIds = this.getAllBookmarkUsers().filter(
-      id => id !== deletedUserId,
+  unbookmark(deletedId: T): void {
+    const userIds = this.getAllBookmarks().filter(
+      id => id !== deletedId,
     )
-    localStorage.setItem(BOOKMARK_USERS_KEY, JSON.stringify(userIds))
+    localStorage.setItem(this.storageKey, JSON.stringify(userIds))
   }
 
-  getAllBookmarkUsers(): string[] {
-    const rawUserIds =
-      localStorage.getItem(BOOKMARK_USERS_KEY) || JSON.stringify([])
-    return JSON.parse(rawUserIds)
+  getAllBookmarks(): T[] {
+    const rawIds =
+      localStorage.getItem(this.storageKey) || JSON.stringify([])
+    return JSON.parse(rawIds)
   }
 }
 
-export default new BookmarkService()
+export const userBookmarkService = new BookmarkService<string>(
+  'bookmark_user_ids',
+)
+export const questionStarService = new BookmarkService<number>(
+  'bookmark_question_ids',
+)

@@ -23,8 +23,9 @@ import {
 } from '../components/credentialsInput'
 import { botOkcService, Profile } from '../okc/okcService'
 import { UserBookmark } from '../components/userBookmark'
-import bookmarkService from '../services/bookmarkService'
+import { userBookmarkService } from '../services/bookmarkService'
 import { ProfileDetails } from '../components/profileDetails/profileDetails'
+import { QuestionStar } from '../components/questionBookmark'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -134,9 +135,9 @@ export const Dashboard: FunctionComponent = () => {
 
   useEffect(() => {
     botOkcService
-      .getProfiles(bookmarkService.getAllBookmarkUsers())
+      .getProfiles(userBookmarkService.getAllBookmarks())
       .then(setProfiles)
-  }, [bookmarkService.getAllBookmarkUsers().length])
+  }, [userBookmarkService.getAllBookmarks().length])
 
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
@@ -172,7 +173,7 @@ export const Dashboard: FunctionComponent = () => {
   }
 
   const handleOnProfileDeleted = ({ userId }: Profile) => {
-    bookmarkService.unbookmark(userId)
+    userBookmarkService.unbookmark(userId)
     setProfiles(profiles.filter(profile => profile.userId !== userId))
   }
 
@@ -243,6 +244,7 @@ export const Dashboard: FunctionComponent = () => {
           <UserBookmark
             onAdd={profile => setProfiles([profile, ...profiles])}
           />
+          <QuestionStar />
         </Container>
 
         <Container maxWidth="lg" className={classes.container}>
