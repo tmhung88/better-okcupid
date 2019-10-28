@@ -14,7 +14,7 @@ import { Answer } from '../../okc/okcService'
 const useStyles = makeStyles(theme => ({
   root: {
     width: '100%',
-    maxWidth: 360,
+    maxWidth: 500,
   },
   inline: {
     display: 'inline',

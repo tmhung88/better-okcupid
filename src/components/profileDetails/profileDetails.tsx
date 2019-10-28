@@ -114,27 +114,20 @@ export const ProfileDetails: FunctionComponent<Props> = ({
           />
         </FormControl>
       </form>
-      <Container maxWidth="lg">
-        <Box>
-          <Typography variant={'h1'}>
-            {profile.displayName}, {profile.age}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption">
-            {profile.lastLogin}
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="caption">
-            {profile.distance}
-          </Typography>
-        </Box>
-      </Container>
 
-      <Container maxWidth="lg">
-        <QuestionFilter answers={answers} />
-      </Container>
+      <Box>
+        <Typography variant={'h1'}>
+          {profile.displayName}, {profile.age}
+        </Typography>
+      </Box>
+      <Box>
+        <Typography variant="caption">{profile.lastLogin}</Typography>
+      </Box>
+      <Box>
+        <Typography variant="caption">{profile.distance}</Typography>
+      </Box>
+
+      <QuestionFilter answers={answers} />
     </Paper>
   )
 }
