@@ -22,7 +22,7 @@ import {
   CredentialsInput,
 } from '../components/credentialsInput'
 import { botOkcService, Profile } from '../okc/okcService'
-import { BookmarkInput } from '../components/bookmarkInput'
+import { UserBookmark } from '../components/userBookmark'
 import bookmarkService from '../services/bookmarkService'
 import { ProfileDetails } from '../components/profileDetails/profileDetails'
 
@@ -240,7 +240,7 @@ export const Dashboard: FunctionComponent = () => {
         </Container>
 
         <Container maxWidth="lg" className={classes.container}>
-          <BookmarkInput
+          <UserBookmark
             onAdd={profile => setProfiles([profile, ...profiles])}
           />
         </Container>

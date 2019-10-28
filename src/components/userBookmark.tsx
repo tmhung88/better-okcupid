@@ -7,7 +7,7 @@ import bookmarkService from '../services/bookmarkService'
 type Props = {
   onAdd: (profile: Profile) => void
 }
-export const BookmarkInput: FunctionComponent<Props> = ({
+export const UserBookmark: FunctionComponent<Props> = ({
   onAdd,
 }: Props) => {
   const [userId, setUserId] = useState<string>('')
