@@ -54,19 +54,12 @@ const anonymousHeaders = {
   'x-okcupid-platform': 'DESKTOP',
 }
 
-type LoginApi = (
-  username: string,
-  password: string,
-) => Promise<UserSession>
+type LoginApi = (username: string, password: string) => Promise<UserSession>
 
 export interface OkcAccount {
   getAccountId(): string
   getUserProfile(userId: string): Promise<Payload>
-  getAnswers(
-    userId: string,
-    filter?: AnswerFilter,
-    pageOpt?: PagingOpt,
-  ): Promise<Payload>
+  getAnswers(userId: string, filter?: AnswerFilter, pageOpt?: PagingOpt): Promise<Payload>
   answer(questionId: number): Promise<Payload>
   getQuestion(questionId: number): Promise<Payload>
 }
@@ -84,11 +77,7 @@ class DumbOkcAccount implements OkcAccount {
     return Promise.resolve({})
   }
 
-  getAnswers(
-    userId: string,
-    filter?: AnswerFilter,
-    pageOpt?: PagingOpt,
-  ): Promise<Payload> {
+  getAnswers(userId: string, filter?: AnswerFilter, pageOpt?: PagingOpt): Promise<Payload> {
     return Promise.resolve({})
   }
 
@@ -128,29 +117,19 @@ class CachedOkcAccount implements OkcAccount {
     })
   }
 
-  async getAnswers(
-    userId: string,
-    filter = AnswerFilter.AGREE,
-    pageOpt: PagingOpt = {},
-  ): Promise<Payload> {
+  async getAnswers(userId: string, filter = AnswerFilter.AGREE, pageOpt: PagingOpt = {}): Promise<Payload> {
     let queryId = `${userId}|filter=${filter}`
-    queryId = pageOpt.before
-      ? `${queryId}|before=${pageOpt.before}`
-      : queryId
-    queryId = pageOpt.after
-      ? `${queryId}|after=${pageOpt.after}`
-      : queryId
+    queryId = pageOpt.before ? `${queryId}|before=${pageOpt.before}` : queryId
+    queryId = pageOpt.after ? `${queryId}|after=${pageOpt.after}` : queryId
 
     const doc = await this._db.table('answers').get(queryId)
     if (!this._bypass && doc) {
       return doc.response
     }
-    return this.account
-      .getAnswers(userId, filter, pageOpt)
-      .then(response => {
-        this._db.table('answers').put({ id: queryId, response })
-        return response
-      })
+    return this.account.getAnswers(userId, filter, pageOpt).then(response => {
+      this._db.table('answers').put({ id: queryId, response })
+      return response
+    })
   }
 
   async answer(questionId: number): Promise<Payload> {
@@ -160,9 +139,7 @@ class CachedOkcAccount implements OkcAccount {
       return doc.response
     }
     return this.account.answer(questionId).then(response => {
-      this._db
-        .table('answered_questions')
-        .put({ id: docId, response })
+      this._db.table('answered_questions').put({ id: docId, response })
       return response
     })
   }
@@ -199,16 +176,10 @@ class UserOkcAccount implements OkcAccount {
   }
 
   getUserProfile(userId: string): Promise<Payload> {
-    return this.axiosInst
-      .get(URLS.userProfile(userId))
-      .then(response => response.data)
+    return this.axiosInst.get(URLS.userProfile(userId)).then(response => response.data)
   }
 
-  getAnswers(
-    userId: string,
-    filter: AnswerFilter.AGREE,
-    pageOpt: PagingOpt,
-  ): Promise<Payload> {
+  getAnswers(userId: string, filter: AnswerFilter.AGREE, pageOpt: PagingOpt): Promise<Payload> {
     const params = { filter, ...pageOpt }
     return this.axiosInst
       .get(URLS.getAnswers(userId), {
@@ -229,47 +200,32 @@ class UserOkcAccount implements OkcAccount {
       get_formatted_response: true,
       target_userid: this.getAccountId(),
     }
-    return this.axiosInst
-      .post(URLS.answerQuestion(questionId), payload)
-      .then(response => response.data)
+    return this.axiosInst.post(URLS.answerQuestion(questionId), payload).then(response => response.data)
   }
 
   getQuestion(questionId: number): Promise<Payload> {
-    return this.axiosInst
-      .get(URLS.getQuestion(questionId))
-      .then(response => response.data)
+    return this.axiosInst.get(URLS.getQuestion(questionId)).then(response => response.data)
   }
 }
 
-const login: LoginApi = (
-  username,
-  password,
-): Promise<UserSession> => {
+const login: LoginApi = (username, password): Promise<UserSession> => {
   const cookie = 'session=12366432516965552599%3A16299680743430403858'
   document.cookie = cookie
   const params = new URLSearchParams()
   params.append('okc_api', String(1))
   params.append('username', username)
   params.append('password', password)
-  return axios
-    .post(URLS.login, params, { headers: anonymousHeaders })
-    .then(response => {
-      return {
-        oauthToken: response.data.oauth_accesstoken,
-        userId: response.data.userid,
-        cookie: cookie,
-      }
-    })
+  return axios.post(URLS.login, params, { headers: anonymousHeaders }).then(response => {
+    return {
+      oauthToken: response.data.oauth_accesstoken,
+      userId: response.data.userid,
+      cookie: cookie,
+    }
+  })
 }
 
 const okcAccount = (userSession: UserSession): OkcAccount => {
   return new CachedOkcAccount(new UserOkcAccount(userSession), db)
 }
 
-export {
-  CachedOkcAccount,
-  DumbOkcAccount,
-  AnswerFilter,
-  login,
-  okcAccount,
-}
+export { CachedOkcAccount, DumbOkcAccount, AnswerFilter, login, okcAccount }

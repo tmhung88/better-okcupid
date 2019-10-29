@@ -17,11 +17,11 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import { mainListItems } from './listItems'
 import { UserList } from './userList'
-import { Credentials, CredentialsInput } from '../components/credentialsInput'
 import { botOkcService, Profile } from '../okc/okcService'
 import { UserBookmark } from '../components/userBookmark'
 import { userBookmarkService } from '../services/bookmarkService'
 import { ProfileDetails } from '../components/profileDetails/profileDetails'
+import { CredentialsManager } from '../components/credentialsManager'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -118,17 +118,16 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export const Dashboard: FunctionComponent = () => {
-  const [credentials, setCredentials] = useState<Credentials>({
-    username: localStorage.getItem('username') || '',
-    password: localStorage.getItem('password') || '',
-  })
-
+  const [isTokenValid, setTokenValid] = useState<boolean>(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
 
   useEffect(() => {
+    if (!isTokenValid) {
+      return
+    }
     botOkcService.getProfiles(userBookmarkService.getAllBookmarks()).then(setProfiles)
-  }, [userBookmarkService.getAllBookmarks().length])
+  }, [userBookmarkService.getAllBookmarks().length, isTokenValid])
 
   const classes = useStyles()
   const [open, setOpen] = React.useState(true)
@@ -137,13 +136,6 @@ export const Dashboard: FunctionComponent = () => {
   }
   const handleDrawerClose = (): void => {
     setOpen(false)
-  }
-
-  const handleCredentialsSubmitted = (updated: Credentials): void => {
-    setCredentials(updated)
-    localStorage.setItem('username', updated.username)
-    localStorage.setItem('password', updated.password)
-    botOkcService.refreshSession(updated.username, updated.password)
   }
 
   const handleProfileOpened = (profile: Profile): void => {
@@ -208,24 +200,27 @@ export const Dashboard: FunctionComponent = () => {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <CredentialsInput credentials={credentials} onSubmit={handleCredentialsSubmitted} />
+          <CredentialsManager onChange={isValid => setTokenValid(isValid)} />
         </Container>
+        {isTokenValid && (
+          <React.Fragment>
+            <Container maxWidth="lg" className={classes.container}>
+              <UserBookmark onAdd={profile => setProfiles([profile, ...profiles])} />
+            </Container>
 
-        <Container maxWidth="lg" className={classes.container}>
-          <UserBookmark onAdd={profile => setProfiles([profile, ...profiles])} />
-        </Container>
-
-        <Container maxWidth="lg" className={classes.container}>
-          {profiles && (
-            <UserList
-              profilesPerRow={4}
-              profiles={profiles}
-              onRefresh={handleRefreshProfile}
-              onDelete={handleOnProfileDeleted}
-              onOpen={handleProfileOpened}
-            />
-          )}
-        </Container>
+            <Container maxWidth="lg" className={classes.container}>
+              {profiles && (
+                <UserList
+                  profilesPerRow={4}
+                  profiles={profiles}
+                  onRefresh={handleRefreshProfile}
+                  onDelete={handleOnProfileDeleted}
+                  onOpen={handleProfileOpened}
+                />
+              )}
+            </Container>
+          </React.Fragment>
+        )}
         {selectedProfile && (
           <Container maxWidth="lg" className={classes.container}>
             <ProfileDetails profile={selectedProfile} />

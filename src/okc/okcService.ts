@@ -1,4 +1,13 @@
-import { AnswerFilter, CachedOkcAccount, DumbOkcAccount, login, okcAccount, OkcAccount, Payload } from './okcClient'
+import {
+  AnswerFilter,
+  CachedOkcAccount,
+  DumbOkcAccount,
+  login,
+  okcAccount,
+  OkcAccount,
+  Payload,
+  UserSession,
+} from './okcClient'
 import ttlCache from '../services/ttlCache'
 
 const USER_SESSION_CACHE_KEY = 'userSession'
@@ -127,14 +136,23 @@ class OkcService {
     }
   }
 
+  getMyProfile(): Promise<Profile> {
+    return this.okc.getUserProfile(this.okc.getAccountId()).then(payload => new Profile(payload))
+  }
+
   getQuestion(questionId: number): Promise<Question> {
     return this.okc.getQuestion(questionId).then(payload => payload as Question)
   }
 
-  refreshSession(username: string, password: string): Promise<void> {
+  getCurrentSession(): UserSession | null {
+    return ttlCache.getItem(USER_SESSION_CACHE_KEY)
+  }
+
+  refreshSession(username: string, password: string): Promise<UserSession> {
     return login(username, password).then(userSession => {
       ttlCache.setItem(USER_SESSION_CACHE_KEY, userSession, 360)
       this.okc = okcAccount(userSession)
+      return userSession
     })
   }
   async getProfile(userId: string): Promise<Profile> {
