@@ -1,10 +1,5 @@
 import React, { Fragment, FunctionComponent, useState } from 'react'
-import {
-  Button,
-  Paper,
-  TextField,
-  Typography,
-} from '@material-ui/core'
+import { Button, Paper, TextField, Typography } from '@material-ui/core'
 import { botOkcService, Question } from '../okc/okcService'
 import { questionStarService } from '../services/bookmarkService'
 import { isNumber } from '../services/utils'
@@ -42,9 +37,7 @@ export const QuestionStar: FunctionComponent = () => {
           shrink: true,
         }}
         value={questionId}
-        onChange={({ target }): void =>
-          handleOnQuestionIdChanged(target.value)
-        }
+        onChange={({ target }): void => handleOnQuestionIdChanged(target.value)}
         margin="normal"
       />
 

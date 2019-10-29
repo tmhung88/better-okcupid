@@ -11,10 +11,7 @@ type Props = {
   onSubmit: (credentials: Credentials) => void
 }
 
-export const CredentialsInput: FunctionComponent<Props> = ({
-  credentials,
-  onSubmit,
-}: Props) => {
+export const CredentialsInput: FunctionComponent<Props> = ({ credentials, onSubmit }: Props) => {
   const [username, setUsername] = useState(credentials.username)
   const [password, setPassword] = useState(credentials.password)
   return (
@@ -34,9 +31,7 @@ export const CredentialsInput: FunctionComponent<Props> = ({
       <Button
         variant="contained"
         color="primary"
-        onClick={(): void =>
-          onSubmit({ username: username, password: password })
-        }
+        onClick={(): void => onSubmit({ username: username, password: password })}
       >
         Submit
       </Button>

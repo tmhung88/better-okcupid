@@ -4,6 +4,7 @@ import { Box, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typog
 import { QuestionList } from './questionList'
 import { questionStarService } from '../../services/bookmarkService'
 
+const STAR_CATEGORY = 'star'
 type Props = {
   profile: Profile
 }
@@ -12,7 +13,7 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
   const [allAnswers, setAllAnswers] = useState<Answer[]>([])
   const [answers, setAnswers] = useState<Answer[]>([])
   const [starredQuestions, setStarredQuestions] = useState<number[]>(questionStarService.getAllBookmarks())
-  const [selectedCategory, setCategory] = useState<string>(Genre.dating)
+  const [selectedCategory, setCategory] = useState<string>(STAR_CATEGORY)
 
   const filterAnswers = (
     answers: Answer[],
@@ -20,7 +21,7 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
     category: string,
     keyword: string,
   ): Answer[] => {
-    if (category === 'star') {
+    if (category === STAR_CATEGORY) {
       return answers.filter(answer => starredQuestions.includes(answer.question.id))
     }
     const genre = Object.values(Genre).find(genre => genre === category)
@@ -37,7 +38,7 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
 
   useEffect(() => {
     setStarredQuestions(questionStarService.getAllBookmarks())
-    filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword)
+    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword))
   }, [questionStarService.getAllBookmarks().length, allAnswers.length])
 
   const handleOnCategoryChanged = (category: string) => {
@@ -82,12 +83,12 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
               id: 'category',
             }}
           >
+            <MenuItem value={STAR_CATEGORY}>star</MenuItem>
             {Object.keys(Genre).map(genre => (
               <MenuItem value={genre} key={genre}>
                 {genre}
               </MenuItem>
             ))}
-            <MenuItem value={'star'}>star</MenuItem>
           </Select>
 
           <TextField

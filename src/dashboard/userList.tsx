@@ -28,11 +28,8 @@ export const UserList: FunctionComponent<Props> = ({
   }
 
   const lastRowInd = profileRows.length - 1
-  const numberOfMissingCards =
-    profilesPerRow - profileRows[lastRowInd].length
-  const emptyCards = Array.from(
-    new Array(numberOfMissingCards).keys(),
-  ).map(index => (
+  const numberOfMissingCards = profilesPerRow - profileRows[lastRowInd].length
+  const emptyCards = Array.from(new Array(numberOfMissingCards).keys()).map(index => (
     <Grid item xs key={index}>
       <EmptyCard />
     </Grid>
@@ -44,12 +41,7 @@ export const UserList: FunctionComponent<Props> = ({
         <Grid container spacing={3} key={rowIndex}>
           {row.map(profile => (
             <Grid item xs key={profile.userId}>
-              <UserCard
-                profile={profile}
-                onRefresh={onRefresh}
-                onDelete={onDelete}
-                onOpen={onOpen}
-              />
+              <UserCard profile={profile} onRefresh={onRefresh} onDelete={onDelete} onOpen={onOpen} />
             </Grid>
           ))}
           {rowIndex === lastRowInd && emptyCards}

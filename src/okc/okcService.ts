@@ -1,12 +1,4 @@
-import {
-  AnswerFilter,
-  CachedOkcAccount,
-  DumbOkcAccount,
-  login,
-  okcAccount,
-  OkcAccount,
-  Payload,
-} from './okcClient'
+import { AnswerFilter, CachedOkcAccount, DumbOkcAccount, login, okcAccount, OkcAccount, Payload } from './okcClient'
 import ttlCache from '../services/ttlCache'
 
 const USER_SESSION_CACHE_KEY = 'userSession'
@@ -81,10 +73,7 @@ class Photo {
   constructor(payload: Payload) {
     const photoUrl = payload.full
     this.payload = payload
-    this.id = photoUrl.substring(
-      photoUrl.indexOf('/0/') + '/0/'.length,
-      photoUrl.lastIndexOf('.webp?v=2'),
-    )
+    this.id = photoUrl.substring(photoUrl.indexOf('/0/') + '/0/'.length, photoUrl.lastIndexOf('.webp?v=2'))
   }
 
   cardUrl(): string {
@@ -115,9 +104,7 @@ export class Profile {
     const location = userData.location.formatted
     const distance = Math.round(location.distance * 1.6)
     this.distance = `${location.standard}, ${distance} km`
-    this.photos = userData.photos.map(
-      (payload: Payload) => new Photo(payload),
-    )
+    this.photos = userData.photos.map((payload: Payload) => new Photo(payload))
   }
 
   payload() {
@@ -141,9 +128,7 @@ class OkcService {
   }
 
   getQuestion(questionId: number): Promise<Question> {
-    return this.okc
-      .getQuestion(questionId)
-      .then(payload => payload as Question)
+    return this.okc.getQuestion(questionId).then(payload => payload as Question)
   }
 
   refreshSession(username: string, password: string): Promise<void> {
@@ -153,37 +138,23 @@ class OkcService {
     })
   }
   async getProfile(userId: string): Promise<Profile> {
-    return this.okc
-      .getUserProfile(userId)
-      .then(payload => new Profile(payload))
+    return this.okc.getUserProfile(userId).then(payload => new Profile(payload))
   }
 
   async getProfiles(userIds: string[]): Promise<Profile[]> {
-    const allProfileReqs = userIds.map(userId =>
-      this.okc.getUserProfile(userId),
-    )
+    const allProfileReqs = userIds.map(userId => this.okc.getUserProfile(userId))
 
     return Promise.all(allProfileReqs).then(profilePayloads =>
-      profilePayloads
-        .filter(payload => Object.keys(payload).length !== 0)
-        .map(payload => new Profile(payload)),
+      profilePayloads.filter(payload => Object.keys(payload).length !== 0).map(payload => new Profile(payload)),
     )
   }
 
-  getAllPublicAnswers(
-    targetId: string,
-  ): Promise<MetaPayload<Answer[]>> {
+  getAllPublicAnswers(targetId: string): Promise<MetaPayload<Answer[]>> {
     return this.getAnswers(targetId, AnswerFilter.PUBLIC)
   }
 
-  async answerFindOuts(
-    targetId: string,
-    holdOn = 1000,
-  ): Promise<Payload> {
-    const response = await this.getAnswers(
-      targetId,
-      AnswerFilter.FIND_OUT,
-    )
+  async answerFindOuts(targetId: string, holdOn = 1000): Promise<Payload> {
+    const response = await this.getAnswers(targetId, AnswerFilter.FIND_OUT)
 
     let successfulCount = 0
     for (const { question } of response.data) {
@@ -195,10 +166,7 @@ class OkcService {
     return Promise.resolve({ answeredQuestions: successfulCount })
   }
 
-  private async getAnswers(
-    userId: string,
-    filter: AnswerFilter,
-  ): Promise<MetaPayload<Answer[]>> {
+  private async getAnswers(userId: string, filter: AnswerFilter): Promise<MetaPayload<Answer[]>> {
     let after = undefined
     let end = false
     const finalPayload: MetaPayload<Answer[]> = {
@@ -207,14 +175,8 @@ class OkcService {
     }
 
     do {
-      const response: Payload = await this.okc.getAnswers(
-        userId,
-        filter,
-        { after: after },
-      )
-      finalPayload.data.push(
-        ...response.data.map((answer: any) => new Answer(answer)),
-      )
+      const response: Payload = await this.okc.getAnswers(userId, filter, { after: after })
+      finalPayload.data.push(...response.data.map((answer: any) => new Answer(answer)))
       finalPayload.paging = response.paging
 
       after = response.paging.cursors.after

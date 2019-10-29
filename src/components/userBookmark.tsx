@@ -7,9 +7,7 @@ import { userBookmarkService } from '../services/bookmarkService'
 type Props = {
   onAdd: (profile: Profile) => void
 }
-export const UserBookmark: FunctionComponent<Props> = ({
-  onAdd,
-}: Props) => {
+export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
   const [userId, setUserId] = useState<string>('')
   const [profile, setProfile] = useState<Profile | null>(null)
   const handleOnUserIdChanged = (userId: string) => {
@@ -38,18 +36,11 @@ export const UserBookmark: FunctionComponent<Props> = ({
       <TextField
         label="User ID"
         value={userId}
-        onChange={({ target }): void =>
-          handleOnUserIdChanged(target.value)
-        }
+        onChange={({ target }): void => handleOnUserIdChanged(target.value)}
         margin="normal"
       />
 
-      <Button
-        variant="contained"
-        color="primary"
-        disabled={!profile}
-        onClick={(): void => handleOnAddClick(profile)}
-      >
+      <Button variant="contained" color="primary" disabled={!profile} onClick={(): void => handleOnAddClick(profile)}>
         Add
       </Button>
       {profile && <UserCard profile={profile} />}

@@ -157,7 +157,7 @@ export const Dashboard: FunctionComponent = () => {
       .then(latestProfile => {
         const profileIndex = profiles.findIndex(profile => profile.userId === latestProfile.userId)
         profiles[profileIndex] = latestProfile
-        setProfiles(profiles)
+        setProfiles([...profiles])
       })
   }
 
