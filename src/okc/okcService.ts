@@ -11,7 +11,7 @@ import {
 import ttlCache from '../services/ttlCache'
 
 const USER_SESSION_CACHE_KEY = 'userSession'
-const delay = (ms: 1000): Promise<void> => {
+const delay = (ms: number): Promise<void> => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -159,8 +159,13 @@ class OkcService {
     return this.okc.getUserProfile(userId).then(payload => new Profile(payload))
   }
 
-  async getProfiles(userIds: string[]): Promise<Profile[]> {
-    const allProfileReqs = userIds.map(userId => this.okc.getUserProfile(userId))
+  async getProfiles(userIds: string[], waitInMs = 0): Promise<Profile[]> {
+    const allProfileReqs = []
+    userIds.map(userId => this.okc.getUserProfile(userId))
+    for (const userId of userIds) {
+      allProfileReqs.push(this.okc.getUserProfile(userId))
+      await delay(waitInMs)
+    }
 
     return Promise.all(allProfileReqs).then(profilePayloads =>
       profilePayloads.filter(payload => Object.keys(payload).length !== 0).map(payload => new Profile(payload)),

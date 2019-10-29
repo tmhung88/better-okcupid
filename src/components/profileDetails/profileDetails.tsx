@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react'
 import { Answer, botOkcService, Genre, Profile } from '../../okc/okcService'
-import { Box, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
+import { Box, FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
 import { QuestionList } from './questionList'
 import { questionStarService } from '../../services/bookmarkService'
 
@@ -102,8 +102,10 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
       </form>
 
       <Box>
-        <Typography variant={'h1'}>
-          {profile.displayName}, {profile.age}
+        <Typography variant={'h4'}>
+          <Link target="_blank" href={`https://www.okcupid.com/profile/${profile.userId}`} rel="noreferrer">
+            {profile.displayName}, {profile.age}
+          </Link>
         </Typography>
       </Box>
       <Box>

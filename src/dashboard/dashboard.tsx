@@ -22,6 +22,8 @@ import { UserBookmark } from '../components/userBookmark'
 import { userBookmarkService } from '../services/bookmarkService'
 import { ProfileDetails } from '../components/profileDetails/profileDetails'
 import { CredentialsManager } from '../components/credentialsManager'
+import moment from 'moment'
+import { isEmpty } from '../services/utils'
 
 const Copyright: FunctionComponent = () => {
   return (
@@ -121,12 +123,33 @@ export const Dashboard: FunctionComponent = () => {
   const [isTokenValid, setTokenValid] = useState<boolean>(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [refreshedAt, setRefreshAt] = useState<string>('')
 
+  /**
+   * Auto refresh profiles every 5 minutes
+   */
+  const autoRefreshProfiles = () => {
+    const MINUTE = 60 * 1000
+    const DELAY_BETWEEN_REQUESTS = 1000
+    const AUTO_REFESH_INTERVAL = userBookmarkService.getAllBookmarks().length * DELAY_BETWEEN_REQUESTS + 5 * MINUTE
+    return setInterval(() => {
+      botOkcService
+        .bypassCache(true)
+        .getProfiles(userBookmarkService.getAllBookmarks(), DELAY_BETWEEN_REQUESTS)
+        .then(setProfiles)
+      setRefreshAt(moment().format('hh:MM:ss A'))
+    }, AUTO_REFESH_INTERVAL)
+  }
   useEffect(() => {
     if (!isTokenValid) {
       return
     }
+
     botOkcService.getProfiles(userBookmarkService.getAllBookmarks()).then(setProfiles)
+    const refreshProfileInterval = autoRefreshProfiles()
+    return () => {
+      clearInterval(refreshProfileInterval)
+    }
   }, [userBookmarkService.getAllBookmarks().length, isTokenValid])
 
   const classes = useStyles()
@@ -209,6 +232,11 @@ export const Dashboard: FunctionComponent = () => {
             </Container>
 
             <Container maxWidth="lg" className={classes.container}>
+              {!isEmpty(refreshedAt) && (
+                <Typography variant="subtitle1" component="p">
+                  Refreshed at {refreshedAt}
+                </Typography>
+              )}
               {profiles && (
                 <UserList
                   profilesPerRow={4}

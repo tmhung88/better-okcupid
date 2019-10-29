@@ -55,10 +55,13 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
       return
     }
 
-    botOkcService.getProfile(userId).then(profile => {
-      setProfile(profile)
-      setError(null)
-    })
+    botOkcService
+      .bypassCache(true)
+      .getProfile(userId)
+      .then(profile => {
+        setProfile(profile)
+        setError(null)
+      })
   }
   const handleOnAddClick = (profile: Profile | null) => {
     if (!profile) {
