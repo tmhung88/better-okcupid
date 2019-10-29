@@ -2,6 +2,7 @@
 import axios, { AxiosInstance } from 'axios'
 import db from '../db'
 import Dexie from 'dexie'
+import ttlCache from '../services/ttlCache'
 
 const URLS = {
   login: `/okc/login`,
@@ -17,6 +18,7 @@ const URLS = {
   getQuestion(questionId: number) {
     return `/okc/1/apitun/questions/${questionId}`
   },
+  graphql: '/okc/graphql',
 }
 
 export type UserSession = {
@@ -38,17 +40,19 @@ enum AnswerFilter {
   /**
    * Get all public answers, inclduing all filters
    */
-  PUBLIC = 1,
-  PRIVATE = 2,
-  IMPORTANT = 4,
-  EXPLAIN = 8,
-  AGREE = 9,
-  DISAGREE = 10,
+  PUBLIC = '1',
+  PRIVATE = '2',
+  IMPORTANT = '4',
+  EXPLAIN = '8',
+  AGREE = '9',
+  DISAGREE = '10',
   /**
    * Get all missing questions
    */
-  FIND_OUT = 11,
+  FIND_OUT = '11',
 }
+
+export type QuestionFilterStats = { [key in AnswerFilter]?: number }
 
 const anonymousHeaders = {
   'x-okcupid-platform': 'DESKTOP',
@@ -62,6 +66,7 @@ export interface OkcAccount {
   getAnswers(userId: string, filter?: AnswerFilter, pageOpt?: PagingOpt): Promise<Payload>
   answer(questionId: number): Promise<Payload>
   getQuestion(questionId: number): Promise<Payload>
+  getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats>
 }
 
 class DumbOkcAccount implements OkcAccount {
@@ -82,6 +87,10 @@ class DumbOkcAccount implements OkcAccount {
   }
 
   getQuestion(questionId: number): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  getQuestionFilterStats(targetId: string): Promise<Payload> {
     return Promise.resolve({})
   }
 }
@@ -154,6 +163,18 @@ class CachedOkcAccount implements OkcAccount {
       return response
     })
   }
+
+  getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats> {
+    const key = `profile_questions_${this.getAccountId()}_${targetId}`
+    const doc = ttlCache.getItem(key)
+    if (!this._bypass && doc) {
+      return doc.response
+    }
+    return this.account.getQuestionFilterStats(targetId).then(stats => {
+      ttlCache.setItem(key, stats, 24 * 60 * 7)
+      return stats
+    })
+  }
 }
 
 class UserOkcAccount implements OkcAccount {
@@ -205,6 +226,26 @@ class UserOkcAccount implements OkcAccount {
 
   getQuestion(questionId: number): Promise<Payload> {
     return this.axiosInst.get(URLS.getQuestion(questionId)).then(response => response.data)
+  }
+
+  getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats> {
+    const payload = (userId: string, targetId: string) => {
+      return `{"operationName":"matchProfileQuestionsEntry","variables":{"targetId":"${targetId}","viewerId":"${userId}"},"query":"query matchProfileQuestionsEntry($targetId: String!, $viewerId: String!) {\\n  user(id: $viewerId) {\\n    id\\n    primaryImage {\\n      square160\\n      __typename\\n    }\\n    match(id: $targetId) {\\n      matchPercent\\n      questionFilters {\\n        id\\n        count\\n        __typename\\n      }\\n      user {\\n        id\\n        username\\n        displayname\\n        primaryImage {\\n          square160\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}`
+    }
+    return this.axiosInst
+      .post(URLS.graphql, payload(this.getAccountId(), targetId), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => {
+        const stats: QuestionFilterStats = {}
+        const questionFilters = response.data.data.user.match.questionFilters
+        questionFilters.forEach((filter: any) => {
+          stats[filter.id as AnswerFilter] = filter.count
+        })
+        return stats
+      })
   }
 }
 

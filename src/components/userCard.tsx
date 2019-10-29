@@ -1,25 +1,34 @@
 import React from 'react'
 import { Card, CardActionArea, CardActions, CardContent, CardMedia, IconButton, Typography } from '@material-ui/core'
 import { Profile } from '../okc/okcService'
-import RefreshIcon from '@material-ui/icons/Refresh'
 import DeleteIcon from '@material-ui/icons/Delete'
 
-const cardStyle = {
-  display: 'block',
-  width: '280px',
+const styles = {
+  card: {
+    display: 'block',
+    width: '270px',
+    position: 'relative' as 'relative',
+  },
+  overlay: {
+    bottom: '7px',
+    right: '7px',
+    color: 'red',
+    backgroundColor: 'inherits',
+    position: 'absolute' as 'absolute',
+  },
 }
 
 type Props = {
+  disabled?: boolean
   profile: Profile
-  onRefresh?: (profile: Profile) => void
   onDelete?: (profile: Profile) => void
   onOpen?: (profile: Profile) => void
 }
 
-export const UserCard = ({ profile, onRefresh, onDelete, onOpen }: Props) => {
+export const UserCard = ({ disabled = false, profile, onDelete, onOpen }: Props) => {
   return (
-    <Card style={cardStyle}>
-      <CardActionArea onClick={onOpen ? (): void => onOpen(profile) : undefined}>
+    <Card style={styles.card}>
+      <CardActionArea onClick={onOpen ? (): void => onOpen(profile) : undefined} disabled={disabled}>
         <CardMedia
           component="img"
           alt="Contemplative Reptile"
@@ -27,34 +36,29 @@ export const UserCard = ({ profile, onRefresh, onDelete, onOpen }: Props) => {
           title="Contemplative Reptile"
         />
         <CardContent>
-          <Typography gutterBottom variant="h5" component="h2">
+          <Typography gutterBottom variant="h5" component="p">
             {profile.displayName}, {profile.age}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            {profile.distance}
           </Typography>
           <Typography variant="body2" color="textSecondary" component="p">
             {profile.lastLogin}
           </Typography>
         </CardContent>
       </CardActionArea>
-      <CardActions>
-        {onRefresh && (
-          <IconButton edge="start" color="inherit" onClick={() => onRefresh(profile)}>
-            <RefreshIcon />
-          </IconButton>
-        )}
-
-        {onDelete && (
-          <IconButton edge="start" color="inherit" onClick={() => onDelete(profile)}>
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </CardActions>
+      {onDelete && (
+        <IconButton
+          style={styles.overlay}
+          edge="start"
+          color="inherit"
+          onClick={() => onDelete(profile)}
+          disabled={disabled}
+        >
+          <DeleteIcon />
+        </IconButton>
+      )}
     </Card>
   )
 }
 
 export const EmptyCard = () => {
-  return <Card style={cardStyle}></Card>
+  return <Card style={styles.card}></Card>
 }

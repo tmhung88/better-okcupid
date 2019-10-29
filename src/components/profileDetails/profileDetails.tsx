@@ -52,13 +52,11 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
   }
 
   const handleOnQuestionStarred = (questionId: number) => {
-    console.log('Star question ' + questionId)
     questionStarService.bookmark(questionId)
     setStarredQuestions(questionStarService.getAllBookmarks())
   }
 
   const handleOnQuestionUnstarred = (questionId: number) => {
-    console.log('Unstar question ' + questionId)
     questionStarService.unbookmark(questionId)
     setStarredQuestions(questionStarService.getAllBookmarks())
   }
@@ -74,8 +72,6 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
               const value = event.target.value
               if (typeof value === 'string') {
                 handleOnCategoryChanged(value)
-              } else {
-                console.log('Something else', value)
               }
             }}
             inputProps={{

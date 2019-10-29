@@ -6,6 +6,7 @@ import {
   okcAccount,
   OkcAccount,
   Payload,
+  QuestionFilterStats,
   UserSession,
 } from './okcClient'
 import ttlCache from '../services/ttlCache'
@@ -155,6 +156,11 @@ class OkcService {
       return userSession
     })
   }
+
+  getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats> {
+    return this.okc.getQuestionFilterStats(targetId)
+  }
+
   async getProfile(userId: string): Promise<Profile> {
     return this.okc.getUserProfile(userId).then(payload => new Profile(payload))
   }

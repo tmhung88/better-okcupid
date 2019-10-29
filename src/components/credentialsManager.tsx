@@ -31,7 +31,6 @@ export const CredentialsManager = ({ onChange }: Props) => {
   }
 
   useEffect(() => {
-    console.log('Validate session', session)
     botOkcService
       .bypassCache(true)
       .getMyProfile()
@@ -40,7 +39,6 @@ export const CredentialsManager = ({ onChange }: Props) => {
   }, [session ? session.oauthToken : null])
 
   useEffect(() => {
-    console.log('isTokenValid ', isTokenValid)
     onChange(isTokenValid)
   }, [isTokenValid])
 

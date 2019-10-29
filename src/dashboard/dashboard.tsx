@@ -165,17 +165,6 @@ export const Dashboard: FunctionComponent = () => {
     setSelectedProfile(profile)
   }
 
-  const handleRefreshProfile = (profile: Profile): void => {
-    botOkcService
-      .bypassCache(true)
-      .getProfile(profile.userId)
-      .then(latestProfile => {
-        const profileIndex = profiles.findIndex(profile => profile.userId === latestProfile.userId)
-        profiles[profileIndex] = latestProfile
-        setProfiles([...profiles])
-      })
-  }
-
   const handleOnProfileDeleted = ({ userId }: Profile) => {
     userBookmarkService.unbookmark(userId)
     setProfiles(profiles.filter(profile => profile.userId !== userId))
@@ -222,9 +211,11 @@ export const Dashboard: FunctionComponent = () => {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <CredentialsManager onChange={isValid => setTokenValid(isValid)} />
-        </Container>
+        {!isTokenValid && (
+          <Container maxWidth="lg" className={classes.container}>
+            <CredentialsManager onChange={isValid => setTokenValid(isValid)} />
+          </Container>
+        )}
         {isTokenValid && (
           <React.Fragment>
             <Container maxWidth="lg" className={classes.container}>
@@ -241,7 +232,6 @@ export const Dashboard: FunctionComponent = () => {
                 <UserList
                   profilesPerRow={4}
                   profiles={profiles}
-                  onRefresh={handleRefreshProfile}
                   onDelete={handleOnProfileDeleted}
                   onOpen={handleProfileOpened}
                 />
