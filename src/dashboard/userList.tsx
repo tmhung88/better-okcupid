@@ -1,6 +1,6 @@
 import React, { FunctionComponent, Fragment } from 'react'
 import { Grid } from '@material-ui/core'
-import { EmptyCard, UserCard } from '../components/card'
+import { EmptyCard, UserCard } from '../components/userCard'
 import { Profile } from '../okc/okcService'
 
 type Props = {

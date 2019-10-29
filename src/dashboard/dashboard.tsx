@@ -123,7 +123,7 @@ export const Dashboard: FunctionComponent = () => {
   const [isTokenValid, setTokenValid] = useState<boolean>(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [profiles, setProfiles] = useState<Profile[]>([])
-  const [refreshedAt, setRefreshAt] = useState<string>('')
+  const [lastUpdated, setLastUpdated] = useState<string>('')
 
   /**
    * Auto refresh profiles every 5 minutes
@@ -137,7 +137,7 @@ export const Dashboard: FunctionComponent = () => {
         .bypassCache(true)
         .getProfiles(userBookmarkService.getAllBookmarks(), DELAY_BETWEEN_REQUESTS)
         .then(setProfiles)
-      setRefreshAt(moment().format('hh:MM:ss A'))
+      setLastUpdated(moment().format('hh:MM A'))
     }, AUTO_REFESH_INTERVAL)
   }
   useEffect(() => {
@@ -232,9 +232,9 @@ export const Dashboard: FunctionComponent = () => {
             </Container>
 
             <Container maxWidth="lg" className={classes.container}>
-              {!isEmpty(refreshedAt) && (
+              {!isEmpty(lastUpdated) && (
                 <Typography variant="subtitle1" component="p">
-                  Refreshed at {refreshedAt}
+                  Refreshed at {lastUpdated}
                 </Typography>
               )}
               {profiles && (

@@ -3,7 +3,7 @@ import { Box, Button, makeStyles, Paper, TextField, Typography } from '@material
 import { botOkcService, Profile } from '../okc/okcService'
 import { userBookmarkService } from '../services/bookmarkService'
 import { isEmpty } from '../services/utils'
-import { UserCard } from './card'
+import { UserCard } from './userCard'
 
 const useStyles = makeStyles(() => ({
   Box: {
@@ -81,6 +81,7 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
           value={profileLink}
           onChange={({ target }): void => handleOnUserIdChanged(target.value)}
           fullWidth={true}
+          placeholder="https://www.okcupid.com/profile/589275343647...."
         />
       </Box>
 
