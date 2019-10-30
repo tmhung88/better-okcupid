@@ -5,7 +5,6 @@ import {
   createStyles,
   Divider,
   FormControl,
-  Grid,
   InputLabel,
   Link,
   makeStyles,
@@ -70,36 +69,41 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
   useEffect(() => {
     if (!answersAvailable) {
       setAllAnswers([])
+      setAnswers([])
       return
     }
     botOkcService.getAllPublicAnswers(profile.userId).then(payload => {
-      setAllAnswers(payload.data)
+      const allAnswers = payload.data
+      let filteredAnswers = filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword)
+      if (filteredAnswers.length === 0 && selectedCategory === STAR_CATEGORY && allAnswers.length > 0) {
+        setCategory(Genre.dating)
+        filteredAnswers = filterAnswers(allAnswers, questionStarService.getAllBookmarks(), Genre.dating, keyword)
+      }
+      setAnswers(filteredAnswers)
+      setAllAnswers(allAnswers)
     })
   }, [profile.userId, answersAvailable])
 
-  useEffect(() => {
-    setStarredQuestions(questionStarService.getAllBookmarks())
-    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword))
-  }, [questionStarService.getAllBookmarks().length, allAnswers.length])
-
   const handleOnCategoryChanged = (category: string) => {
     setCategory(category)
-    setAnswers(filterAnswers(allAnswers, starredQuestions, category, keyword))
+    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), category, keyword))
   }
 
   const handleOnKeywordChanged = (updatedKeyword: string) => {
     setKeyword(updatedKeyword)
-    setAnswers(filterAnswers(allAnswers, starredQuestions, selectedCategory, updatedKeyword))
+    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, updatedKeyword))
   }
 
   const handleOnQuestionStarred = (questionId: number) => {
     questionStarService.bookmark(questionId)
     setStarredQuestions(questionStarService.getAllBookmarks())
+    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword))
   }
 
   const handleOnQuestionUnstarred = (questionId: number) => {
     questionStarService.unbookmark(questionId)
     setStarredQuestions(questionStarService.getAllBookmarks())
+    setAnswers(filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword))
   }
 
   return (
