@@ -1,0 +1,6 @@
+[build]
+    publish="build"
+[[redirects]]
+    from = "/okc/*"
+    to = "https://www.okcupid.com/:splat"
+    status = 200
