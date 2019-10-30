@@ -1,5 +1,6 @@
 [build]
     publish="build"
+    command = "yarn build"
 [[redirects]]
     from = "/okc/*"
     to = "https://www.okcupid.com/:splat"
