@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardActionArea, CardActions, CardContent, CardMedia, IconButton, Typography } from '@material-ui/core'
+import { Card, CardActionArea, CardContent, CardMedia, IconButton, Typography } from '@material-ui/core'
 import { Profile } from '../okc/okcService'
 import DeleteIcon from '@material-ui/icons/Delete'
 

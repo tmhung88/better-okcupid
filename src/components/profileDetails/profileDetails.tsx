@@ -1,15 +1,50 @@
 import React, { FunctionComponent, useEffect, useState } from 'react'
 import { Answer, botOkcService, Genre, Profile } from '../../okc/okcService'
-import { Box, FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
+import {
+  Box,
+  createStyles,
+  Divider,
+  FormControl,
+  Grid,
+  InputLabel,
+  Link,
+  makeStyles,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Theme,
+  Typography,
+} from '@material-ui/core'
 import { QuestionList } from './questionList'
 import { questionStarService } from '../../services/bookmarkService'
 import { AnswerFetcher } from './answerFetcher'
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+    formControl: {
+      marginBottom: theme.spacing(2),
+      marginLeft: theme.spacing(4),
+      minWidth: 200,
+    },
+    info: {
+      margin: theme.spacing(1),
+      marginLeft: theme.spacing(4),
+    },
+  }),
+)
 
 const STAR_CATEGORY = 'star'
 type Props = {
   profile: Profile
 }
+
 export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => {
+  const classes = useStyles()
   const [keyword, setKeyword] = useState<string>('')
   const [allAnswers, setAllAnswers] = useState<Answer[]>([])
   const [answersAvailable, setAnswersAvailable] = useState<boolean>(false)
@@ -69,8 +104,8 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
 
   return (
     <Paper>
-      <form autoComplete="off">
-        <FormControl>
+      <form className={classes.root}>
+        <FormControl className={classes.formControl}>
           <InputLabel htmlFor="category">Category</InputLabel>
           <Select
             value={selectedCategory}
@@ -92,30 +127,25 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
               </MenuItem>
             ))}
           </Select>
-
-          <TextField
-            id="keyword"
-            label="Keyword"
-            value={keyword}
-            onChange={({ target }) => handleOnKeywordChanged(target.value)}
-            margin="normal"
-          />
+        </FormControl>
+        <FormControl className={classes.formControl}>
+          <TextField label="Keyword" value={keyword} onChange={({ target }) => handleOnKeywordChanged(target.value)} />
         </FormControl>
       </form>
+      <Divider variant="fullWidth" />
 
-      <Typography variant={'h4'} component="p">
-        <Link target="_blank" href={`https://www.okcupid.com/profile/${profile.userId}`} rel="noreferrer">
-          {profile.displayName}, {profile.age}
-        </Link>
-      </Typography>
-      <Typography variant="caption" component="p">
-        {profile.lastLogin}
-      </Typography>
-      <Typography variant="caption" component="p">
-        {profile.distance}
-      </Typography>
-
-      <Box>
+      <Box className={classes.info}>
+        <Typography variant={'h4'} component="p">
+          <Link target="_blank" href={`https://www.okcupid.com/profile/${profile.userId}`} rel="noreferrer">
+            {profile.displayName}, {profile.age}
+          </Link>
+        </Typography>
+        <Typography variant="caption" component="p">
+          {profile.lastLogin}
+        </Typography>
+        <Typography variant="caption" component="p">
+          {profile.distance}
+        </Typography>
         <AnswerFetcher
           userId={profile.userId}
           onAnswersAvailable={answersAvailable => setAnswersAvailable(answersAvailable)}

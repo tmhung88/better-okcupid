@@ -5,10 +5,14 @@ import { userBookmarkService } from '../services/bookmarkService'
 import { isEmpty } from '../services/utils'
 import { UserCard } from './userCard'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   Box: {
     display: 'inline-block',
     width: '75%',
+  },
+  Button: {
+    margin: theme.spacing(4),
+    marginBottom: theme.spacing(0),
   },
 }))
 
@@ -34,7 +38,7 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
     const PREFIX = '.com/profile/'
     const SUFFIX = '?cf'
     const start = link.includes(PREFIX) ? link.indexOf(PREFIX) + PREFIX.length : -1
-    if (start == -1) {
+    if (start === -1) {
       return null
     }
     const possibleEnd = link.includes(SUFFIX) ? link.lastIndexOf(SUFFIX) : link.length
@@ -74,7 +78,7 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
   }
 
   return (
-    <Paper>
+    <Box>
       <Box className={classes.Box}>
         <TextField
           label="Profile Link"
@@ -85,7 +89,13 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
         />
       </Box>
 
-      <Button variant="contained" color="primary" disabled={!profile} onClick={(): void => handleOnAddClick(profile)}>
+      <Button
+        variant="contained"
+        color="primary"
+        className={classes.Button}
+        disabled={!profile}
+        onClick={(): void => handleOnAddClick(profile)}
+      >
         Add
       </Button>
       {error && (
@@ -94,6 +104,6 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
         </Typography>
       )}
       {profile && <UserCard profile={profile} />}
-    </Paper>
+    </Box>
   )
 }

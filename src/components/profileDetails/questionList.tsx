@@ -1,20 +1,25 @@
 import React, { Fragment, FunctionComponent } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
-import { Box, Divider, IconButton, List, ListItem, ListItemText, Typography } from '@material-ui/core'
+import {
+  Avatar,
+  Box,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Typography,
+} from '@material-ui/core'
 import StarsIcon from '@material-ui/icons/Stars'
 import { Answer } from '../../okc/okcService'
+import { questionStarService } from '../../services/bookmarkService'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   root: {
     width: '100%',
     maxWidth: 500,
-  },
-  inline: {
-    display: 'inline',
-  },
-  StarsIcon: {
-    width: 15,
   },
 }))
 
@@ -27,45 +32,25 @@ type Props = {
 
 export const QuestionList: FunctionComponent<Props> = ({ answers, starredQuestions, unstar, star }: Props) => {
   const classes = useStyles()
+  const starredQuestionMap: { [key: number]: boolean } = {}
+  starredQuestions.forEach(questionId => (starredQuestionMap[questionId] = true))
 
+  const handleOnQuestionClicked = (questionId: number): void => {
+    if (starredQuestionMap[questionId]) {
+      unstar(questionId)
+    } else {
+      star(questionId)
+    }
+  }
   return (
     <List className={classes.root}>
       {answers.map(answer => (
-        <Fragment key={answer.question.id}>
-          <ListItem alignItems="flex-start" key={answer.question.id}>
-            <ListItemText
-              primary={
-                <React.Fragment>
-                  <IconButton>
-                    {starredQuestions.includes(answer.question.id) ? (
-                      <StarsIcon style={{ color: 'yellow' }} onClick={() => unstar(answer.question.id)} />
-                    ) : (
-                      <StarsIcon onClick={() => star(answer.question.id)} />
-                    )}
-                  </IconButton>
-                  {`${answer.question.id}. ${answer.question.text}`}
-                </React.Fragment>
-              }
-              secondary={
-                <Fragment>
-                  <Box component="p">
-                    <Typography component="span" variant="body2" className={classes.inline} color="textPrimary">
-                      Answered
-                    </Typography>
-                    {answer.answerChoice()}
-                  </Box>
-                  <Box component="p">
-                    <Typography component="span" variant="body2" className={classes.inline} color="textPrimary">
-                      Wanted
-                    </Typography>
-                    {answer.acceptChoices()[0]}
-                  </Box>
-                </Fragment>
-              }
-            />
-          </ListItem>
-          <Divider variant="inset" component="li" />
-        </Fragment>
+        <ListItem key={answer.question.id} divider>
+          <IconButton onClick={() => handleOnQuestionClicked(answer.question.id)}>
+            {starredQuestionMap[answer.question.id as number] ? <StarsIcon style={{ color: 'blue' }} /> : <StarsIcon />}
+          </IconButton>
+          <ListItemText primary={answer.question.text} secondary={answer.answerChoice()} />
+        </ListItem>
       ))}
     </List>
   )
