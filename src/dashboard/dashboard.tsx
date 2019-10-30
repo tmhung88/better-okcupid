@@ -78,6 +78,9 @@ export const Dashboard: FunctionComponent = () => {
   const handleOnProfileDeleted = ({ userId }: Profile) => {
     userBookmarkService.unbookmark(userId)
     setProfiles(profiles.filter(profile => profile.userId !== userId))
+    if (selectedProfile && selectedProfile.userId === userId) {
+      setSelectedProfile(null)
+    }
   }
 
   return (
