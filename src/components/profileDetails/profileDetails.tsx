@@ -58,7 +58,9 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
     keyword: string,
   ): Answer[] => {
     if (category === STAR_CATEGORY) {
-      return answers.filter(answer => starredQuestions.includes(answer.question.id))
+      return answers
+        .filter(answer => starredQuestions.includes(answer.question.id))
+        .filter(answer => answer.question.text.toLowerCase().includes(keyword.toLowerCase()))
     }
     const genre = Object.values(Genre).find(genre => genre === category)
     return answers
@@ -75,7 +77,13 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
     botOkcService.getAllPublicAnswers(profile.userId).then(payload => {
       const allAnswers = payload.data
       let filteredAnswers = filterAnswers(allAnswers, questionStarService.getAllBookmarks(), selectedCategory, keyword)
-      if (filteredAnswers.length === 0 && selectedCategory === STAR_CATEGORY && allAnswers.length > 0) {
+      const isDefaultFilterSettings =
+        filteredAnswers.length === 0 &&
+        selectedCategory === STAR_CATEGORY &&
+        allAnswers.length > 0 &&
+        keyword.length === 0
+
+      if (isDefaultFilterSettings) {
         setCategory(Genre.dating)
         filteredAnswers = filterAnswers(allAnswers, questionStarService.getAllBookmarks(), Genre.dating, keyword)
       }
