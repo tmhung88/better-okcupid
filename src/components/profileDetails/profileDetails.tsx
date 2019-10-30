@@ -3,6 +3,7 @@ import { Answer, botOkcService, Genre, Profile } from '../../okc/okcService'
 import { Box, FormControl, InputLabel, Link, MenuItem, Paper, Select, TextField, Typography } from '@material-ui/core'
 import { QuestionList } from './questionList'
 import { questionStarService } from '../../services/bookmarkService'
+import { AnswerFetcher } from './answerFetcher'
 
 const STAR_CATEGORY = 'star'
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => {
   const [keyword, setKeyword] = useState<string>('')
   const [allAnswers, setAllAnswers] = useState<Answer[]>([])
+  const [answersAvailable, setAnswersAvailable] = useState<boolean>(false)
   const [answers, setAnswers] = useState<Answer[]>([])
   const [starredQuestions, setStarredQuestions] = useState<number[]>(questionStarService.getAllBookmarks())
   const [selectedCategory, setCategory] = useState<string>(STAR_CATEGORY)
@@ -31,10 +33,14 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
   }
 
   useEffect(() => {
+    if (!answersAvailable) {
+      setAllAnswers([])
+      return
+    }
     botOkcService.getAllPublicAnswers(profile.userId).then(payload => {
       setAllAnswers(payload.data)
     })
-  }, [profile.userId])
+  }, [profile.userId, answersAvailable])
 
   useEffect(() => {
     setStarredQuestions(questionStarService.getAllBookmarks())
@@ -97,18 +103,23 @@ export const ProfileDetails: FunctionComponent<Props> = ({ profile }: Props) => 
         </FormControl>
       </form>
 
+      <Typography variant={'h4'} component="p">
+        <Link target="_blank" href={`https://www.okcupid.com/profile/${profile.userId}`} rel="noreferrer">
+          {profile.displayName}, {profile.age}
+        </Link>
+      </Typography>
+      <Typography variant="caption" component="p">
+        {profile.lastLogin}
+      </Typography>
+      <Typography variant="caption" component="p">
+        {profile.distance}
+      </Typography>
+
       <Box>
-        <Typography variant={'h4'}>
-          <Link target="_blank" href={`https://www.okcupid.com/profile/${profile.userId}`} rel="noreferrer">
-            {profile.displayName}, {profile.age}
-          </Link>
-        </Typography>
-      </Box>
-      <Box>
-        <Typography variant="caption">{profile.lastLogin}</Typography>
-      </Box>
-      <Box>
-        <Typography variant="caption">{profile.distance}</Typography>
+        <AnswerFetcher
+          userId={profile.userId}
+          onAnswersAvailable={answersAvailable => setAnswersAvailable(answersAvailable)}
+        />
       </Box>
 
       <QuestionList

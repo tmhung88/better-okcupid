@@ -4,3 +4,6 @@ export function isNumber(value: string | number): boolean {
 export function isEmpty(value: string | null | undefined): boolean {
   return !value || value.trim() === ''
 }
+export function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

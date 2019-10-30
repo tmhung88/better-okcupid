@@ -114,7 +114,7 @@ export const Dashboard: FunctionComponent = () => {
         )}
         {selectedProfile && (
           <Container maxWidth="lg" className={classes.container}>
-            <ProfileDetails profile={selectedProfile} />
+            <ProfileDetails profile={selectedProfile} key={selectedProfile.userId} />
           </Container>
         )}
       </main>

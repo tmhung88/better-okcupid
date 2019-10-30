@@ -10,11 +10,9 @@ import {
   UserSession,
 } from './okcClient'
 import ttlCache from '../services/ttlCache'
+import { delay } from '../services/utils'
 
 const USER_SESSION_CACHE_KEY = 'userSession'
-const delay = (ms: number): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 export enum Genre {
   dating = 'dating',
@@ -182,17 +180,8 @@ class OkcService {
     return this.getAnswers(targetId, AnswerFilter.PUBLIC)
   }
 
-  async answerFindOuts(targetId: string, holdOn = 1000): Promise<Payload> {
-    const response = await this.getAnswers(targetId, AnswerFilter.FIND_OUT)
-
-    let successfulCount = 0
-    for (const { question } of response.data) {
-      await this.okc.answer(question.id)
-      await delay(1000)
-      successfulCount++
-    }
-
-    return Promise.resolve({ answeredQuestions: successfulCount })
+  getAllFindOuts(targetId: string): Promise<MetaPayload<Answer[]>> {
+    return this.getAnswers(targetId, AnswerFilter.FIND_OUT)
   }
 
   private async getAnswers(userId: string, filter: AnswerFilter): Promise<MetaPayload<Answer[]>> {
@@ -206,13 +195,19 @@ class OkcService {
     do {
       const response: Payload = await this.okc.getAnswers(userId, filter, { after: after })
       finalPayload.data.push(...response.data.map((answer: any) => new Answer(answer)))
+      if (finalPayload.data.length === 0) {
+        return finalPayload
+      }
       finalPayload.paging = response.paging
-
       after = response.paging.cursors.after
       end = response.paging.end
     } while (after && !end)
 
     return finalPayload
+  }
+
+  async answerQuestion(questionId: number) {
+    return this.okc.answer(questionId)
   }
 }
 

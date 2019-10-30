@@ -166,9 +166,9 @@ class CachedOkcAccount implements OkcAccount {
 
   getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats> {
     const key = `profile_questions_${this.getAccountId()}_${targetId}`
-    const doc = ttlCache.getItem(key)
-    if (!this._bypass && doc) {
-      return doc.response
+    const item = ttlCache.getItem(key)
+    if (!this._bypass && item) {
+      return Promise.resolve(item)
     }
     return this.account.getQuestionFilterStats(targetId).then(stats => {
       ttlCache.setItem(key, stats, 24 * 60 * 7)
