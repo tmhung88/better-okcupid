@@ -249,6 +249,14 @@ class UserOkcAccount implements OkcAccount {
   }
 }
 
+type LoginResponse = {
+  actionable: boolean,
+  status: number,
+  status_str: 0 | 104,
+  userid: string,
+  oauth_accesstoken?: string,
+}
+
 const login: LoginApi = (username, password): Promise<UserSession> => {
   const cookie = 'session=12366432516965552599%3A16299680743430403858'
   document.cookie = cookie
@@ -256,14 +264,22 @@ const login: LoginApi = (username, password): Promise<UserSession> => {
   params.append('okc_api', String(1))
   params.append('username', username)
   params.append('password', password)
-  return axios.post(URLS.login, params, { headers: anonymousHeaders }).then(response => {
-    return {
-      oauthToken: response.data.oauth_accesstoken,
-      userId: response.data.userid,
-      cookie: cookie,
-    }
+  return new Promise<UserSession>((resolve, reject) => {
+    axios.post(URLS.login, params, { headers: anonymousHeaders }).then(response => {
+      const loginResponse: LoginResponse = response.data
+      if (loginResponse.oauth_accesstoken && loginResponse.status === 0) {
+        resolve({
+          oauthToken: loginResponse.oauth_accesstoken,
+          userId: loginResponse.userid,
+          cookie: cookie,
+        })
+      } else {
+        reject({ status: loginResponse.status, reason: loginResponse.status_str })
+      }
+    })
   })
 }
+
 
 const okcAccount = (userSession: UserSession): OkcAccount => {
   return new CachedOkcAccount(new UserOkcAccount(userSession), db)

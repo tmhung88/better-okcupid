@@ -44,7 +44,7 @@ export const CredentialsManager = ({ onChange }: Props) => {
         localStorage.setItem('password', password)
         setError(null)
       })
-      .catch(() => setError('Wrong username/password'))
+      .catch(error => setError(`${error.status}. ${error.reason}`))
   }
 
   useEffect(() => {
@@ -71,10 +71,11 @@ export const CredentialsManager = ({ onChange }: Props) => {
       )}
       <TextField
         className={classes.TextField}
-        label="Name"
+        label="Username"
         value={username}
         onChange={({ target }): void => setUsername(target.value)}
         margin="normal"
+        inputProps={{ 'data-cy': 'username' }}
       />
       <TextField
         className={classes.TextField}
@@ -82,8 +83,10 @@ export const CredentialsManager = ({ onChange }: Props) => {
         margin="normal"
         value={password}
         onChange={({ target }): void => setPassword(target.value)}
+        inputProps={{ 'data-cy': 'password' }}
       />
       <Button
+        data-cy="save"
         className={classes.Button}
         variant="contained"
         color="primary"
@@ -93,7 +96,7 @@ export const CredentialsManager = ({ onChange }: Props) => {
       </Button>
       {error && (
         <Typography color="error" component="p">
-          ${error}
+          {error}
         </Typography>
       )}
     </Box>
