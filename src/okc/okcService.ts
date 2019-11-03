@@ -135,16 +135,8 @@ class OkcService {
     }
   }
 
-  getMyProfile(): Promise<Profile> {
-    return this.okc.getUserProfile(this.okc.getAccountId()).then(payload => new Profile(payload))
-  }
-
   getQuestion(questionId: number): Promise<Question> {
     return this.okc.getQuestion(questionId).then(payload => payload as Question)
-  }
-
-  getCurrentSession(): UserSession | null {
-    return ttlCache.getItem(USER_SESSION_CACHE_KEY)
   }
 
   refreshSession(username: string, password: string): Promise<UserSession> {

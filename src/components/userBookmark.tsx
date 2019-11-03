@@ -81,6 +81,7 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
     <Box>
       <Box className={classes.Box}>
         <TextField
+          data-cy="profile-link"
           label="Profile Link"
           value={profileLink}
           onChange={({ target }): void => handleOnUserIdChanged(target.value)}
@@ -90,6 +91,7 @@ export const UserBookmark: FunctionComponent<Props> = ({ onAdd }: Props) => {
       </Box>
 
       <Button
+        data-cy="bookmark-profile"
         variant="contained"
         color="primary"
         className={classes.Button}

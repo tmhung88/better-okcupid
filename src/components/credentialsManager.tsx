@@ -26,7 +26,7 @@ type Props = {
 export const CredentialsManager = ({ onChange }: Props) => {
   const classes = useStyles()
   const [isTokenValid, setTokenValid] = useState<boolean>(false)
-  const [session, setSession] = useState<UserSession | null>(botOkcService.getCurrentSession())
+
   const [username, setUsername] = useState<string>(localStorage.getItem('username') || '')
   const [password, setPassword] = useState<string>(localStorage.getItem('password') || '')
   const [error, setError] = useState<string | null>(null)
@@ -37,25 +37,20 @@ export const CredentialsManager = ({ onChange }: Props) => {
     }
     botOkcService
       .refreshSession(username, password)
-      .then(session => {
-        setSession(session)
+      .then(() => {
         setTokenValid(true)
         localStorage.setItem('username', username)
         localStorage.setItem('password', password)
         setError(null)
       })
-      .catch(error => setError(`${error.status}. ${error.reason}`))
+      .catch(error => {
+        setTokenValid(false)
+        setError(`${error.status}. ${error.reason}`)
+      })
   }
 
   useEffect(() => {
-    if (!session) {
-      return
-    }
-    botOkcService
-      .bypassCache(true)
-      .getMyProfile()
-      .then(() => setTokenValid(true))
-      .catch(() => refreshToken(username, password))
+    refreshToken(username, password)
   }, [])
 
   useEffect(() => {
