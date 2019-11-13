@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@material-ui/core'
 import StarsIcon from '@material-ui/icons/Stars'
-import { Answer } from '../../okc/okcService'
+import { Answer } from '../../services/okcService'
 import { questionStarService } from '../../services/bookmarkService'
 
 const useStyles = makeStyles(() => ({

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { botOkcService } from '../../okc/okcService'
-import { AnswerFilter, QuestionFilterStats } from '../../okc/okcClient'
+import { botOkcService } from '../../services/okcService'
+import { AnswerFilter, QuestionFilterStats } from '../../services/okcClient'
 import { Typography } from '@material-ui/core'
 import { delay } from '../../services/utils'
 type Props = {

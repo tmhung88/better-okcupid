@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardActionArea, CardContent, CardMedia, IconButton, Typography } from '@material-ui/core'
-import { Profile } from '../okc/okcService'
+import { Profile } from '../services/okcService'
 import DeleteIcon from '@material-ui/icons/Delete'
 
 const styles = {

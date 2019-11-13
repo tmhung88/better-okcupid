@@ -1,7 +1,7 @@
 import React, { FunctionComponent, Fragment } from 'react'
 import { Grid } from '@material-ui/core'
-import { EmptyCard, UserCard } from '../components/userCard'
-import { Profile } from '../okc/okcService'
+import { EmptyCard, UserCard } from './userCard'
+import { Profile } from '../services/okcService'
 
 type Props = {
   profilesPerRow: number

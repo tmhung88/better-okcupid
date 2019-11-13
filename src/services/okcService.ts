@@ -9,8 +9,8 @@ import {
   QuestionFilterStats,
   UserSession,
 } from './okcClient'
-import ttlCache from '../services/ttlCache'
-import { delay } from '../services/utils'
+import ttlCache from './ttlCache'
+import { delay } from './utils'
 
 const USER_SESSION_CACHE_KEY = 'userSession'
 

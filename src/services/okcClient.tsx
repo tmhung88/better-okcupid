@@ -2,7 +2,7 @@
 import axios, { AxiosInstance } from 'axios'
 import db from '../db'
 import Dexie from 'dexie'
-import ttlCache from '../services/ttlCache'
+import ttlCache from './ttlCache'
 
 const URLS = {
   login: `/okc/login`,
@@ -250,11 +250,11 @@ class UserOkcAccount implements OkcAccount {
 }
 
 type LoginResponse = {
-  actionable: boolean,
-  status: number,
-  status_str: 0 | 104,
-  userid: string,
-  oauth_accesstoken?: string,
+  actionable: boolean
+  status: number
+  status_str: 0 | 104
+  userid: string
+  oauth_accesstoken?: string
 }
 
 const login: LoginApi = (username, password): Promise<UserSession> => {
@@ -279,7 +279,6 @@ const login: LoginApi = (username, password): Promise<UserSession> => {
     })
   })
 }
-
 
 const okcAccount = (userSession: UserSession): OkcAccount => {
   return new CachedOkcAccount(new UserOkcAccount(userSession), db)

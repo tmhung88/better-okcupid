@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { botOkcService } from '../okc/okcService'
+import { botOkcService } from '../services/okcService'
 import { isEmpty } from '../services/utils'
 import { Box, Button, createStyles, makeStyles, Paper, TextField, Theme, Typography } from '@material-ui/core'
-import { UserSession } from '../okc/okcClient'
+import { UserSession } from '../services/okcClient'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

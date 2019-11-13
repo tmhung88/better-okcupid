@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react'
 import { Box, Button, makeStyles, Paper, TextField, Typography } from '@material-ui/core'
-import { botOkcService, Profile } from '../okc/okcService'
+import { botOkcService, Profile } from '../services/okcService'
 import { userBookmarkService } from '../services/bookmarkService'
 import { isEmpty } from '../services/utils'
 import { UserCard } from './userCard'

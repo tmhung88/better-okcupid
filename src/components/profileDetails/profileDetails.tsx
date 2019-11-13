@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react'
-import { Answer, botOkcService, Genre, Profile } from '../../okc/okcService'
+import { Answer, botOkcService, Genre, Profile } from '../../services/okcService'
 import {
   Box,
   createStyles,

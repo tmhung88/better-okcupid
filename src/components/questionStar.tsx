@@ -1,6 +1,6 @@
 import React, { Fragment, FunctionComponent, useState } from 'react'
 import { Button, Paper, TextField, Typography } from '@material-ui/core'
-import { botOkcService, Question } from '../okc/okcService'
+import { botOkcService, Question } from '../services/okcService'
 import { questionStarService } from '../services/bookmarkService'
 import { isNumber } from '../services/utils'
 
