@@ -3,11 +3,15 @@ import axios, { AxiosInstance } from 'axios'
 import db from '../db'
 import Dexie from 'dexie'
 import ttlCache from './ttlCache'
+import { Answer } from './okcService'
 
 const URLS = {
   login: `/okc/login`,
   userProfile: (userId: string): string => {
     return `/okc/1/apitun/profile/${userId}`
+  },
+  getMyAnswer: (questionId: number): string => {
+    return `/okc/1/apitun/profile/me/questions/${questionId}`
   },
   getAnswers: (userId: string): string => {
     return `/okc/1/apitun/profile/${userId}/answers`
@@ -62,10 +66,21 @@ type LoginApi = (username: string, password: string) => Promise<UserSession>
 
 export interface OkcAccount {
   getAccountId(): string
+
   getUserProfile(userId: string): Promise<Payload>
+
+  getMyAnswer(questionId: number): Promise<Payload>
+
   getAnswers(userId: string, filter?: AnswerFilter, pageOpt?: PagingOpt): Promise<Payload>
+
   answer(questionId: number): Promise<Payload>
+
+  hideAnswer(answer: Answer): Promise<Payload>
+
+  skipQuestion(questionId: number): Promise<Payload>
+
   getQuestion(questionId: number): Promise<Payload>
+
   getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats>
 }
 
@@ -82,7 +97,15 @@ class DumbOkcAccount implements OkcAccount {
     return Promise.resolve({})
   }
 
+  getMyAnswer(questionId: number): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
   getAnswers(userId: string, filter?: AnswerFilter, pageOpt?: PagingOpt): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  hideAnswer(answer: Answer): Promise<Payload> {
     return Promise.resolve({})
   }
 
@@ -91,6 +114,10 @@ class DumbOkcAccount implements OkcAccount {
   }
 
   getQuestionFilterStats(targetId: string): Promise<Payload> {
+    return Promise.resolve({})
+  }
+
+  skipQuestion(questionId: number): Promise<Payload> {
     return Promise.resolve({})
   }
 }
@@ -126,6 +153,10 @@ class CachedOkcAccount implements OkcAccount {
     })
   }
 
+  getMyAnswer(questionId: number): Promise<Payload> {
+    return this.account.getMyAnswer(questionId)
+  }
+
   async getAnswers(userId: string, filter = AnswerFilter.AGREE, pageOpt: PagingOpt = {}): Promise<Payload> {
     let queryId = `${userId}|filter=${filter}`
     queryId = pageOpt.before ? `${queryId}|before=${pageOpt.before}` : queryId
@@ -151,6 +182,14 @@ class CachedOkcAccount implements OkcAccount {
       this._db.table('answered_questions').put({ id: docId, response })
       return response
     })
+  }
+
+  hideAnswer(answer: Answer): Promise<Payload> {
+    return this.account.hideAnswer(answer)
+  }
+
+  skipQuestion(questionId: number): Promise<Payload> {
+    return this.account.skipQuestion(questionId)
   }
 
   async getQuestion(questionId: number): Promise<Payload> {
@@ -200,6 +239,10 @@ class UserOkcAccount implements OkcAccount {
     return this.axiosInst.get(URLS.userProfile(userId)).then(response => response.data)
   }
 
+  getMyAnswer(questionId: number): Promise<Payload> {
+    return this.axiosInst.get(URLS.getMyAnswer(questionId)).then(response => response.data)
+  }
+
   getAnswers(userId: string, filter: AnswerFilter.AGREE, pageOpt: PagingOpt): Promise<Payload> {
     const params = { filter, ...pageOpt }
     return this.axiosInst
@@ -222,6 +265,36 @@ class UserOkcAccount implements OkcAccount {
       target_userid: this.getAccountId(),
     }
     return this.axiosInst.post(URLS.answerQuestion(questionId), payload).then(response => response.data)
+  }
+
+  hideAnswer(answer: Answer): Promise<Payload> {
+    const importanceMap: { [K: number]: string } = {
+      3: 'SOMEWHAT',
+      4: 'LITTLE',
+      5: 'IRRELEVANT',
+      1: 'VERY',
+    }
+    console.log('Answer', answer)
+    console.log('Importance ', importanceMap[answer.payload.target.importance], answer.payload.target.importance)
+
+    const payload = {
+      qid: answer.question.id,
+      answer: answer.answer,
+      match_answers: answer.accepts,
+      importance: importanceMap[answer.payload.target.importance],
+      public: false,
+      note: answer.note,
+      source: 'profile',
+      get_formatted_response: true,
+      target_userid: this.getAccountId(),
+    }
+    return this.axiosInst.post(URLS.answerQuestion(answer.question.id), payload).then(response => response.data)
+  }
+
+  skipQuestion(questionId: number): Promise<Payload> {
+    return this.axiosInst
+      .post(URLS.answerQuestion(questionId), { skip: true, source: 'profile' })
+      .then(response => response.data)
   }
 
   getQuestion(questionId: number): Promise<Payload> {
@@ -258,7 +331,7 @@ type LoginResponse = {
 }
 
 const login: LoginApi = (username, password): Promise<UserSession> => {
-  const cookie = 'session=12366432516965552599%3A16299680743430403858'
+  const cookie = 'session=11551063781932885483%3a2663289166349093220'
   document.cookie = cookie
   const params = new URLSearchParams()
   params.append('okc_api', String(1))

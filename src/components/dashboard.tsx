@@ -11,6 +11,7 @@ import { ProfileDetails } from './profileDetails/profileDetails'
 import { CredentialsManager } from './credentialsManager'
 import moment from 'moment'
 import { isEmpty } from '../services/utils'
+import { HideMyAnswers } from './hideMyAnswers'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -94,6 +95,9 @@ export const Dashboard: FunctionComponent = () => {
         )}
         {isTokenValid && (
           <React.Fragment>
+            <Container>
+              <HideMyAnswers></HideMyAnswers>
+            </Container>
             <Container maxWidth="lg" className={classes.container}>
               <UserBookmark onAdd={profile => setProfiles([profile, ...profiles])} />
             </Container>

@@ -55,7 +55,7 @@ class Answer {
     const target = payload.target
     this.answer = target.answer
     this.accepts = target.accepts
-    this.note = target.note
+    this.note = target.note?.note
   }
 
   answerChoice(): string {
@@ -145,6 +145,18 @@ class OkcService {
       this.okc = okcAccount(userSession)
       return userSession
     })
+  }
+
+  hideAnswer(answer: Answer): Promise<Payload> {
+    return this.okc.hideAnswer(answer)
+  }
+
+  getMyAnswer(questionId: number): Promise<Payload> {
+    return this.okc.getMyAnswer(questionId)
+  }
+
+  skipQuestion(questionId: number): Promise<Payload> {
+    return this.okc.skipQuestion(questionId)
   }
 
   getQuestionFilterStats(targetId: string): Promise<QuestionFilterStats> {
