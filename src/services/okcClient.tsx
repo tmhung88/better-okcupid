@@ -331,7 +331,7 @@ type LoginResponse = {
 }
 
 const login: LoginApi = (username, password): Promise<UserSession> => {
-  const cookie = 'session=11551063781932885483%3a2663289166349093220'
+  const cookie = 'session=12366432516965552599%3a16299680743430403858'
   document.cookie = cookie
   const params = new URLSearchParams()
   params.append('okc_api', String(1))

@@ -95,9 +95,6 @@ export const Dashboard: FunctionComponent = () => {
         )}
         {isTokenValid && (
           <React.Fragment>
-            <Container>
-              <HideMyAnswers></HideMyAnswers>
-            </Container>
             <Container maxWidth="lg" className={classes.container}>
               <UserBookmark onAdd={profile => setProfiles([profile, ...profiles])} />
             </Container>
