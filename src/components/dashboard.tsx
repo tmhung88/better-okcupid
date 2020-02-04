@@ -88,11 +88,9 @@ export const Dashboard: FunctionComponent = () => {
     <div className={classes.root}>
       <CssBaseline />
       <main className={classes.content}>
-        {!isTokenValid && (
-          <Container maxWidth="lg" className={classes.container}>
-            <CredentialsManager onChange={isValid => setTokenValid(isValid)} />
-          </Container>
-        )}
+        <Container maxWidth="lg" className={classes.container}>
+          <CredentialsManager onChange={isValid => setTokenValid(isValid)} />
+        </Container>
         {isTokenValid && (
           <React.Fragment>
             <Container maxWidth="lg" className={classes.container}>

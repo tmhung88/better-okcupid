@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { botOkcService } from '../services/okcService'
+import { botOkcService, Profile } from '../services/okcService'
 import { isEmpty } from '../services/utils'
-import { Box, Button, createStyles, makeStyles, Paper, TextField, Theme, Typography } from '@material-ui/core'
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  createStyles,
+  makeStyles,
+  Paper,
+  TextField,
+  Theme,
+  Typography,
+} from '@material-ui/core'
 import { UserSession } from '../services/okcClient'
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -16,6 +27,10 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: theme.spacing(4),
       marginBottom: theme.spacing(0),
     },
+    large: {
+      width: theme.spacing(7),
+      height: theme.spacing(7),
+    },
   }),
 )
 
@@ -29,24 +44,25 @@ export const CredentialsManager = ({ onChange }: Props) => {
 
   const [username, setUsername] = useState<string>(localStorage.getItem('username') || '')
   const [password, setPassword] = useState<string>(localStorage.getItem('password') || '')
+  const [botProfile, setBotProfile] = useState<Profile | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const refreshToken = (username: string, password: string): void => {
+  const refreshToken = async (username: string, password: string): Promise<void> => {
     if (isEmpty(username) || isEmpty(password)) {
       return
     }
-    botOkcService
-      .refreshSession(username, password)
-      .then(() => {
-        setTokenValid(true)
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        setError(null)
-      })
-      .catch(error => {
-        setTokenValid(false)
-        setError(`${error.status}. ${error.reason}`)
-      })
+    try {
+      const userSession = await botOkcService.refreshSession(username, password)
+      setTokenValid(true)
+      localStorage.setItem('username', username)
+      localStorage.setItem('password', password)
+      const botProfile = await botOkcService.getProfile(userSession.userId)
+      setBotProfile(botProfile)
+      console.log(botProfile)
+    } catch (error) {
+      setTokenValid(false)
+      setError(`${error.status}. ${error.reason}`)
+    }
   }
 
   useEffect(() => {
@@ -57,6 +73,14 @@ export const CredentialsManager = ({ onChange }: Props) => {
     onChange(isTokenValid)
   }, [onChange, isTokenValid])
 
+  if (botProfile) {
+    return (
+      <Chip
+        avatar={<Avatar alt="Bot Account" src={botProfile.photos[0].payload.full_small} />}
+        label={botProfile.displayName}
+      />
+    )
+  }
   return (
     <Box>
       {(isEmpty(username) || isEmpty(password)) && (
@@ -85,7 +109,7 @@ export const CredentialsManager = ({ onChange }: Props) => {
         className={classes.Button}
         variant="contained"
         color="primary"
-        onClick={(): void => refreshToken(username, password)}
+        onClick={() => refreshToken(username, password)}
       >
         Save
       </Button>
